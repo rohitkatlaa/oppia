@@ -434,6 +434,21 @@
           "js": ["dist/js/select2.full.js"]
         }
       },
+      "literallyCanvas": {
+        "version": "0.4.14",
+        "downloadFormat": "tar",
+        "url": "https://github.com/literallycanvas/literallycanvas/archive/v0.4.14.tar.gz",
+        "tarRootDirPrefix": "literallycanvas-",
+        "rootDirPrefix": "literallycanvas-",
+        "targetDirPrefix": "literallycanvas-"
+      },
+      "literallyCanvasReactDependency":{
+        "version": "0.14.3",
+        "downloadFormat": "files",
+        "url": "https://unpkg.com/react@0.14.3/dist",
+        "targetDirPrefix": "literallycanvas-react-dependency-",
+        "files": ["react.js"]
+      },
       "ckeditor": {
         "version": "4.12.1",
         "downloadFormat": "zip",

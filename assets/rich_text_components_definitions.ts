@@ -161,6 +161,40 @@ export = {
       "default_value": ""
     }]
   },
+  "SVGeditor": {
+    "backend_id": "SVGeditor",
+    "category": "Basic Input",
+    "description": "An custom svg diagram.",
+    "frontend_id": "svgeditor",
+    "tooltip": "Insert diagram",
+    "icon_data_url": "/rich_text_components/SVGeditor/SVGeditor.png",
+    "is_complex": false,
+    "requires_fs": true,
+    "is_lesson_related": false,
+    "is_block_element": true,
+    "customization_arg_specs": [{
+      "name": "svg_filepath",
+      "description": "The custom svg diagram",
+      "schema": {
+        "type": "custom",
+        "obj_type": "LiterallyCanvasDiagram"
+      },
+      "default_value": ""
+    }, {
+      "name": "alt",
+      "description": "Briefly explain this diagram to a visually impaired learner",
+      "schema": {
+        "type": "unicode",
+        "validators": [{
+          "id": "is_nonempty"
+        }],
+        "ui_config": {
+          "placeholder": "Description of the diagram"
+        }
+      },
+      "default_value": ""
+    }]
+  },
   "Tabs": {
     "backend_id": "Tabs",
     "category": "Basic Input",
