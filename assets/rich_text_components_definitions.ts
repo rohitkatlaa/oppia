@@ -161,13 +161,13 @@ export = {
       "default_value": ""
     }]
   },
-  "SVGeditor": {
-    "backend_id": "SVGeditor",
+  "Svgeditor": {
+    "backend_id": "svgeditor",
     "category": "Basic Input",
     "description": "An custom svg diagram.",
     "frontend_id": "svgeditor",
     "tooltip": "Insert diagram",
-    "icon_data_url": "/rich_text_components/SVGeditor/SVGeditor.png",
+    "icon_data_url": "/rich_text_components/Svgeditor/Svgeditor.png",
     "is_complex": false,
     "requires_fs": true,
     "is_lesson_related": false,

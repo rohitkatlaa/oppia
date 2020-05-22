@@ -1,5 +1,3 @@
-import { lch } from "d3";
-
 // Copyright 2014 The Oppia Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -103,7 +101,7 @@ angular.module('oppia').directive('literallyCanvasDiagramEditor',[
         ctrl.setSavedImageFilename = function(filename, setData) {
           ctrl.diagramStatus = 'saved';
           ctrl.data = {
-            saveSVGFileName: filename,
+            savedSVGFileName: filename,
             savedSVGUrl: getTrustedResourceUrlForImageFileName(filename)
           }
           ctrl.value = filename;
@@ -154,7 +152,7 @@ angular.module('oppia').directive('literallyCanvasDiagramEditor',[
                 // Pre-load image before marking the image as saved.
                 var img = new Image();
                 img.onload = function() {
-                  ctrl.setSavedImageFilename(data.filename, true);
+                  ctrl.setSavedImageFilename(data.filename, false);
                   var dimensions = (
                     ImagePreloaderService.getDimensionsOfImage(data.filename));
                   ctrl.svgContainerStyle = {
@@ -239,18 +237,19 @@ angular.module('oppia').directive('literallyCanvasDiagramEditor',[
             })
         }
 
-        
+        ctrl.validate = function(data) {
+          return ctrl.isDiagramSaved() &&
+          data.savedSVGFileName &&
+          data.savedSVGFileName.length > 0;
+        }
         
         
         ctrl.$onInit = function() {
           // A timeout is necessary because when literallyCanvas is initialized
           // container has no size. So a timeout is necessary to ensure that the
           // lc div is loaded into the DOM before literallyCanvas is initialized.
-          // console.log("hi")
-          // console.log(ctrl.value)
-          // console.log("hi")
           if(ctrl.value) {
-            ctrl.setSavedImageFilename(ctrl.value, false);
+            ctrl.setSavedImageFilename(ctrl.value, true);
             var dimensions = (
               ImagePreloaderService.getDimensionsOfImage(ctrl.value));
             ctrl.svgContainerStyle = {

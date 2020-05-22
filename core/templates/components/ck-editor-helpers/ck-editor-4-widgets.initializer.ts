@@ -31,6 +31,9 @@ angular.module('oppia').run([
     var _RICH_TEXT_COMPONENTS = RteHelperService.getRichTextComponents();
     _RICH_TEXT_COMPONENTS.forEach(function(componentDefn) {
       // The name of the CKEditor widget corresponding to this component.
+      // if (componentDefn.id == 'svgeditor'){
+      //   return;
+      // }
       var ckName = 'oppia' + componentDefn.id;
 
       // Check to ensure that a plugin is not registered more than once.

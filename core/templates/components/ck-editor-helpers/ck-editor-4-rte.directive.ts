@@ -41,6 +41,9 @@ angular.module('oppia').directive('ckEditor4Rte', [
         var canReferToSkills = ContextService.canEntityReferToSkills();
 
         _RICH_TEXT_COMPONENTS.forEach(function(componentDefn) {
+          // if (componentDefn.id == 'svgeditor'){
+          //   return;
+          // }
           if (!((scope.uiConfig() &&
             scope.uiConfig().hide_complex_extensions &&
             componentDefn.isComplex) ||

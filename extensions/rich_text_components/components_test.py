@@ -217,6 +217,28 @@ class ComponentValidationUnitTests(test_utils.GenericTestBase):
         self.check_validation(
             components.Video, valid_items, invalid_items)
 
+    def test_svg_editor_validation(self):
+       """Tests svg editor component validation."""
+       valid_items = [{
+           'svg_filepath-with-value': 'random.svg',
+           'alt-with-value': '1234'
+       }, {
+           'svg_filepath-with-value': 'xyz.svg',
+           'alt-with-value': 'hello'
+       }]
+       invalid_items = [{
+           'svg_filepath-with-value': 'random.png',
+           'alt-with-value': 'abc'
+       }, {
+           'svg_filepath-with-value': 'xyz.svg.svg',
+           'alt-with-value': 'hello'
+       }, {
+           'svg_filepath-with-value': 'xyz.png.svg',
+           'alt-with-value': 'hello'
+       }]
+ 
+       self.check_validation(
+           components.Svgeditor, valid_items, invalid_items)
 
 class ComponentDefinitionTests(test_utils.GenericTestBase):
     """Tests definition of rich text components."""
@@ -248,6 +270,7 @@ class ComponentE2eTests(test_utils.GenericTestBase):
         actual_components = [name for name in os.listdir(
             rich_text_components_dir) if os.path.isdir(os.path.join(
                 rich_text_components_dir, name))]
+        print(actual_components)
         with python_utils.open_file(test_file, 'r') as f:
             text = f.read()
             # Replace all spaces and new lines with empty space.

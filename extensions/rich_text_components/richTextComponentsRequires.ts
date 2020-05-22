@@ -32,7 +32,7 @@ require(
   'rich_text_components/Skillreview/directives/' +
   'oppia-noninteractive-skillreview.directive.ts');
 require(
-    'rich_text_components/SVGeditor/directives/' +
+    'rich_text_components/Svgeditor/directives/' +
     'oppia-noninteractive-svgeditor.directive.ts');
 require(
   'rich_text_components/Tabs/directives/' +

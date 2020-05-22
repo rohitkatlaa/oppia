@@ -20,7 +20,6 @@
  * followed by the name of the arg.
  */
 
-require('domain/utilities/url-interpolation.service.ts');
 require('pages/exploration-player-page/services/image-preloader.service.ts');
 require('services/assets-backend-api.service.ts');
 require('services/context.service.ts');
@@ -29,11 +28,9 @@ require('services/html-escaper.service.ts');
 angular.module('oppia').directive('oppiaNoninteractiveSvgeditor', [
   'AssetsBackendApiService', 'ContextService',
   'HtmlEscaperService', 'ImagePreloaderService',
-  'UrlInterpolationService', 'ENTITY_TYPE', 'LOADING_INDICATOR_URL',
   function(
       AssetsBackendApiService, ContextService,
-      HtmlEscaperService, ImagePreloaderService,
-      UrlInterpolationService, ENTITY_TYPE, LOADING_INDICATOR_URL) {
+      HtmlEscaperService, ImagePreloaderService) {
     return {
       restrict: 'E',
       scope: {},
@@ -43,9 +40,6 @@ angular.module('oppia').directive('oppiaNoninteractiveSvgeditor', [
       controller: ['$attrs', function($attrs) {
         var ctrl = this;
         ctrl.$onInit = function() {
-          console.log("hello")
-          console.log($attrs)
-          console.log("hello")
           ctrl.filepath = HtmlEscaperService.escapedJsonToObj(
             $attrs.svgFilepathWithValue);
           ctrl.dimensions = (
