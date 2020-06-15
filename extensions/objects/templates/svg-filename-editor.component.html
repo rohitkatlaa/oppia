@@ -1,53 +1,53 @@
-<div class="literally">
-    <div class="lc-drawing">
+<div class="svg-editor">
+    <div class="fabric-canvas">
         <canvas id="canvas"></canvas>
     </div>
-    <div class="lc-picker">
+    <div class="vertical-toolbar">
         <div>
-            <button class="lc-pick-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/pencil.svg);" title="Pencil">
+            <button class="icon-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/pencil.svg);">
             </button>
-            <button class="lc-pick-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/line.svg);" title="Line">
+            <button class="icon-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/line.svg);">
             </button>
-            <button class="lc-pick-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/rectangle.svg);" title="Rectangle" ng-click="$ctrl.createRect()">
+            <button class="icon-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/rectangle.svg);" ng-click="$ctrl.createRect()">
             </button>
-            <button class="lc-pick-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/circle.svg);" title="Ellipse">
+            <button class="icon-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/circle.svg);">
             </button>
-            <button class="lc-pick-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/text.svg);" title="Text">
+            <button class="icon-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/text.svg);">
             </button>
-            <button class="lc-pick-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/polygon.svg);" title="Polygon">
+            <button class="icon-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/polygon.svg);">
             </button>
-            <button class="lc-pick-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/eye-dropper.svg);" title="Eyedropper">
+            <button class="icon-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/eye-dropper.svg);">
             </button>
-            <div style="position:absolute;bottom:0;left:0;right:0;">
-                <div class="lc-color-pickers">
-                    <div class="color-well" style="float:left;text-align:center;">
+            <div class="vert-bottom-toolbar">
+                <div>
+                    <div class="color-well">
                         <label>stroke</label>
                         <br>
                         <input type="color">
                     </div>
-                    <div class="color-well" style="float:left;text-align:center;">
+                    <div class="color-well">
                         <label>fill</label>
                         <br>
                         <input type="color">
                     </div>
-                    <div class="color-well" style="float:left;text-align:center;">
+                    <div class="color-well">
                         <label>bg</label>
                         <br>
                         <input type="color">
                     </div>
                 </div>
                 <div>
-                    <button class="lc-pick-tool toolbar-button thin-button" title="Undo"
+                    <button class="icon-tool toolbar-button thin-button"
                         style="background-image:url(/assets/svg_diagram_editor/undo.svg);">
                     </button>
-                    <button class="lc-pick-tool toolbar-button thin-button" title="Redo"
+                    <button class="icon-tool toolbar-button thin-button"
                         style="background-image:url(/assets/svg_diagram_editor/redo.svg);">
                     </button>
                 </div>
@@ -93,112 +93,102 @@
 </div>
 
 <style>
-    .literally {
-        position: relative;
+    .svg-editor {
         background-color: #ffffff;
         min-height: 400px;
+        position: relative;
     }
 
-    .literally, .literally * {
+    .svg-editor > * {
+        position: absolute
+    }
+
+    .svg-editor, .svg-editor * {
         -moz-box-sizing: border-box;
         -webkit-box-sizing: border-box;
         box-sizing: border-box
     }
 
-    .literally .lc-drawing {
+    .svg-editor .fabric-canvas {
         border: 1px solid #555555;
+        bottom: 0;
+        cursor: default;
+        left: 65px;
+        right: 0;
         top: 31px;
-        bottom: 0;
-        right: 0;
-        left: 0;
     }
 
-    .literally > * {
-        position: absolute
-    }
-
-    .literally .lc-picker {
-        top: 0;
-        left: 0;
-        bottom: 0;
-        width: 65px;
+    .svg-editor .horz-toolbar {
         background-color: #ffffff;
-        border: 1px solid #555555
-    }
-
-    .literally .lc-drawing > * {
-        position: absolute;
+        border: 1px solid #555555;
+        height: 31px;
+        left: 65px;
+        right: 0;
         top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0
     }
 
-    .literally .lc-drawing {
-        right: 0;
-        left: 61px;
-        cursor: default
-    }
-
-    .literally .lc-picker .toolbar-button {
-        width: 26px;
-        height: 26px;
-        line-height: 26px;
-        margin: 2px;
-        padding: 0;
-        cursor: pointer;
-        text-align: center;
-        border: 2px solid transparent;
+    .svg-editor .horz-toolbar .square-toolbar-button {
+        border: 1px solid #aaa;
         border-radius: 3px;
-        text-decoration: none;
-        cursor: pointer;
-        background-color: #ffffff;
-    }
-
-    .literally .lc-picker .thin-button {
-        cursor: pointer;
         float: left;
-        position: relative
+        font-size: x-small;
+        height: 28px;
+        margin: 1px;
+        padding-left: 3px;
+        position: relative;
+        width: 28px;
     }
 
-    .literally .lc-picker .fat-button {
+    .svg-editor .vertical-toolbar {
+        background-color: #ffffff;
+        border: 1px solid #555555;
+        bottom: 0;
+        left: 0;
+        top: 0;
+        width: 65px;
+    }
+
+    .svg-editor .vertical-toolbar .fat-button {
         clear: both;
         font-size: small;
         width: 60px
     }
 
-    .literally .lc-picker .lc-pick-tool {
-        background-size: 100% auto;
+    .svg-editor .vertical-toolbar .icon-tool {
+        background-position: center center;
         background-repeat: no-repeat;
-        background-position: center center
+        background-size: 100% auto;
     }
 
-    .literally .color-well {
-        font-size: 10px;
+    .svg-editor .vertical-toolbar .thin-button {
         float: left;
-        width: 60px
+        position: relative
     }
 
-    .literally .horz-toolbar {
-        border: 1px solid #555555;
-        z-index: 1;
-        right: 0;
-        top: 0;
-        left: 65px;
-        height: 31px;
-        background-color: #ffffff
-    }
-
-    .literally .horz-toolbar .square-toolbar-button {
-        font-size: x-small;
+    .svg-editor .vertical-toolbar .toolbar-button {
+        background-color: #ffffff;
         border: 2px solid transparent;
         border-radius: 3px;
-        margin: 1px;
-        border: 1px solid #aaa;
-        width: 28px;
-        height: 28px;
+        height: 26px;
+        line-height: 26px;
+        margin: 2px;
+        padding: 0;
+        text-align: center;
+        text-decoration: none;
+        width: 26px;
+    }
+
+    .svg-editor .vertical-toolbar .vert-bottom-toolbar {
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0
+    }
+
+    .svg-editor .vertical-toolbar .vert-bottom-toolbar .color-well {
         float: left;
-        position: relative;
-        padding-left: 3px;
+        font-size: 10px;
+        text-align: center;
+        width: 60px
     }
 </style>
