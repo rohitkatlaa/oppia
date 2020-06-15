@@ -26,6 +26,7 @@ require('services/image-local-storage.service.ts');
 require('services/image-upload-helper.service.ts');
 
 const LC = require('literallycanvas');
+const { fabric } = require('fabric');
 require('literallycanvas/lib/css/literallycanvas.css');
 require('services/literally-canvas-helper.service.ts');
 
@@ -321,34 +322,73 @@ angular.module('oppia').component('svgFilenameEditor', {
           ctrl.isDiagramSaved() && ctrl.data.savedSVGFileName &&
           ctrl.data.savedSVGFileName.length > 0);
       };
+      ctrl.createRect =function() {
+        console.log("hello")
+        var rect = new fabric.Rect({
+          top : 10,
+          left : 10,
+          width : 60,
+          height : 70,
+          fill : 'green'
+      });
+        ctrl.canvas.add(rect);
+      }
 
       ctrl.$onInit = function() {
-        LC.defineSVGRenderer(
-          'Rectangle', LiterallyCanvasHelperService.rectangleSVGRenderer);
-        LC.defineSVGRenderer(
-          'Ellipse', LiterallyCanvasHelperService.ellipseSVGRenderer);
-        LC.defineSVGRenderer(
-          'Line', LiterallyCanvasHelperService.lineSVGRenderer);
-        LC.defineSVGRenderer(
-          'LinePath', LiterallyCanvasHelperService.linepathSVGRenderer);
-        LC.defineSVGRenderer(
-          'Polygon', LiterallyCanvasHelperService.polygonSVGRenderer);
-        LC.defineSVGRenderer(
-          'Text', LiterallyCanvasHelperService.textSVGRenderer);
-        if (ctrl.value) {
-          ctrl.setSavedSVGFilename(ctrl.value, true);
-          var dimensions = (
-            ImagePreloaderService.getDimensionsOfImage(ctrl.value));
-          ctrl.svgContainerStyle = {
-            height: dimensions.height + 'px',
-            width: dimensions.width + 'px'
-          };
-        } else {
-          angular.element(document).ready(function() {
-            ctrl.lc = LC.init(
-              document.getElementById(ctrl.lcID), lcInitializingOptions);
+
+      //   console.log(fabric);
+        ctrl.canvas = new fabric.Canvas('canvas');
+
+        var rect = new fabric.Rect({
+            top : 100,
+            left : 100,
+            width : 60,
+            height : 70,
+            fill : 'red'
+        });
+
+        ctrl.canvas.add(rect);
+        fabric.loadSVGFromURL("http://fabricjs.com/assets/1.svg", function(objects,options) {
+
+          var loadedObjects = fabric.util.groupSVGElements(objects, options);
+
+          loadedObjects.set({
+                  width: 200,
+                  height: 200
           });
-        }
+          
+          ctrl.canvas.add(loadedObjects);
+          ctrl.canvas.renderAll();
+          // console.log(ctrl.canvas.toSVG());
+
+      });
+
+      //   LC.defineSVGRenderer(
+      //     'Rectangle', LiterallyCanvasHelperService.rectangleSVGRenderer);
+      //   LC.defineSVGRenderer(
+      //     'Ellipse', LiterallyCanvasHelperService.ellipseSVGRenderer);
+      //   LC.defineSVGRenderer(
+      //     'Line', LiterallyCanvasHelperService.lineSVGRenderer);
+      //   LC.defineSVGRenderer(
+      //     'LinePath', LiterallyCanvasHelperService.linepathSVGRenderer);
+      //   LC.defineSVGRenderer(
+      //     'Polygon', LiterallyCanvasHelperService.polygonSVGRenderer);
+      //   LC.defineSVGRenderer(
+      //     'Text', LiterallyCanvasHelperService.textSVGRenderer);
+      //   if (ctrl.value) {
+      //     ctrl.setSavedSVGFilename(ctrl.value, true);
+      //     var dimensions = (
+      //       ImagePreloaderService.getDimensionsOfImage(ctrl.value));
+      //     ctrl.svgContainerStyle = {
+      //       height: dimensions.height + 'px',
+      //       width: dimensions.width + 'px'
+      //     };
+      //   } else {
+      //     angular.element(document).ready(function() {
+      //       ctrl.lc = LC.init(
+      //         document.getElementById(ctrl.lcID), lcInitializingOptions);
+      //     });
+      //   }
       };
     }
   ]
