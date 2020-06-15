@@ -1,215 +1,204 @@
-<div class="container">
-    <div class="row">
-        <div class="col-2 border">
-            <div class="row">
-                <div class="col-6 border button-col d-flex justify-content-center">
-
-                    <button type="button" class="btn">
-						<i class="tool icon-pencil"></i>
-					</button>
-                </div>
-                <div class="col-6 border button-col d-flex justify-content-center">
-
-                    <button type="button" class="btn">
-						<i class="tool icon-line"></i>
-					</button>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-6 border button-col d-flex justify-content-center">
-
-                    <button type="button" class="btn">
-						<i class="tool icon-rect"></i>
-					</button>
-                </div>
-                <div class="col-6 border button-col d-flex justify-content-center">
-
-                    <button type="button" class="btn">
-						<i class="tool icon-circle"></i>
-					</button>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-6 border button-col d-flex justify-content-center">
-
-                    <button type="button" class="btn">
-						<i class="tool icon-text"></i>
-					</button>
-                </div>
-                <div class="col-6 border button-col d-flex justify-content-center">
-
-                    <button type="button" class="btn">
-						<i class="tool icon-polygon"></i>
-					</button>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-6 border button-col d-flex justify-content-center">
-
-                    <button type="button" class="btn">
-						<i class="tool icon-eye-dropper"></i>
-					</button>
-                </div>
-                <div class="col-6 border button-col d-flex justify-content-center">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12 border button-col d-flex justify-content-center">
-                    <input type="color" value="#000000">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12 border button-col d-flex justify-content-center">
-
-                    <button type="button" class="btn btn-success">
-						A
-					</button>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12 border button-col d-flex justify-content-center">
-
-                    <button type="button" class="btn btn-success">
-						A
-					</button>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-6 border button-col d-flex justify-content-center">
-
-                    <button type="button" class="btn btn-success">
-						A
-					</button>
-                </div>
-                <div class="col-6 border button-col d-flex justify-content-center">
-
-                    <button type="button" class="btn btn-success">
-						A
-					</button>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12 border button-col d-flex justify-content-center">
-
-                    <button type="button" class="btn btn-success">
-						A
-					</button>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12 border button-col d-flex justify-content-center">
-
-                    <button type="button" class="btn btn-success">
-						A
-					</button>
-                </div>
-            </div>
-        </div>
-        <div class="col-10 border">
-            <div class="row">
-                <div class="col-12 border">
-                    <div class="row">
-                        <div class="col-1 border button-col d-flex justify-content-center">
-
-                            <button type="button" class="btn btn-success">
-								A
-							</button>
-                        </div>
-                        <div class="col-1 border button-col d-flex justify-content-center">
-
-                            <button type="button" class="btn btn-success">
-								A
-							</button>
-                        </div>
-                        <div class="col-1 border button-col d-flex justify-content-center">
-
-                            <button type="button" class="btn btn-success">
-								A
-							</button>
-                        </div>
-                        <div class="col-1 border button-col d-flex justify-content-center">
-
-                            <button type="button" class="btn btn-success">
-								A
-							</button>
-                        </div>
-                        <div class="col-1 border button-col d-flex justify-content-center">
-
-                            <button type="button" class="btn btn-success">
-								A
-							</button>
-                        </div>
-                        <div class="col-1 border button-col d-flex justify-content-center">
-
-                            <button type="button" class="btn btn-success">
-								A
-							</button>
-                        </div>
-                        <div class="col-1 border button-col d-flex justify-content-center">
-
-                            <button type="button" class="btn btn-success">
-								A
-							</button>
-                        </div>
-                        <div class="col-1 border button-col d-flex justify-content-center">
-
-                            <button type="button" class="btn btn-success">
-								A
-							</button>
-                        </div>
-                        <div class="col-1 border">
-                        </div>
-                        <div class="col-1 border">
-                        </div>
-                        <div class="col-1 border">
-                        </div>
-                        <div class="col-1 border">
-                        </div>
+<div class="literally">
+    <div class="lc-drawing">
+        <canvas id="canvas"></canvas>
+    </div>
+    <div class="lc-picker">
+        <div>
+            <button class="lc-pick-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/pencil.svg);" title="Pencil">
+            </button>
+            <button class="lc-pick-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/line.svg);" title="Line">
+            </button>
+            <button class="lc-pick-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/rectangle.svg);" title="Rectangle" ng-click="$ctrl.createRect()">
+            </button>
+            <button class="lc-pick-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/circle.svg);" title="Ellipse">
+            </button>
+            <button class="lc-pick-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/text.svg);" title="Text">
+            </button>
+            <button class="lc-pick-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/polygon.svg);" title="Polygon">
+            </button>
+            <button class="lc-pick-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/eye-dropper.svg);" title="Eyedropper">
+            </button>
+            <div style="position:absolute;bottom:0;left:0;right:0;">
+                <div class="lc-color-pickers">
+                    <div class="color-well" style="float:left;text-align:center;">
+                        <label>stroke</label>
+                        <br>
+                        <input type="color">
+                    </div>
+                    <div class="color-well" style="float:left;text-align:center;">
+                        <label>fill</label>
+                        <br>
+                        <input type="color">
+                    </div>
+                    <div class="color-well" style="float:left;text-align:center;">
+                        <label>bg</label>
+                        <br>
+                        <input type="color">
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-12 border">
-                    <canvas id="canvas"></canvas>
+                <div>
+                    <button class="lc-pick-tool toolbar-button thin-button" title="Undo"
+                        style="background-image:url(/assets/svg_diagram_editor/undo.svg);">
+                    </button>
+                    <button class="lc-pick-tool toolbar-button thin-button" title="Redo"
+                        style="background-image:url(/assets/svg_diagram_editor/redo.svg);">
+                    </button>
                 </div>
+                <button class="toolbar-button fat-button">Remove</button>
+                <button class="toolbar-button fat-button">Clear</button>
+            </div>
+        </div>
+    </div>
+    <div class="horz-toolbar">
+        <div>
+            <div>
+                <button class="square-toolbar-button">
+                    1px
+                </button>
+            </div>
+            <div>
+                <button class="square-toolbar-button">
+                    2px
+                </button>
+            </div>
+            <div>
+                <button class="square-toolbar-button">
+                    3px
+                </button>
+            </div>
+            <div>
+                <button class="square-toolbar-button">
+                    5px
+                </button>
+            </div>
+            <div>
+                <button class="square-toolbar-button">
+                    10px
+                </button>
+            </div>
+            <div>
+                <button class="square-toolbar-button">
+                    30px
+                </button>
             </div>
         </div>
     </div>
 </div>
+
 <style>
-    .button-col d-flex justify-content-center {
-        padding-left: 0px;
-        padding-right: 0px;
+    .literally {
+        position: relative;
+        background-color: #ffffff;
+        min-height: 400px;
     }
-    .tool {
-        background-size: cover;
-        display: inline-block;
-        height: 16px;
-        width: 16px;
-        }
-    .color-label {
+
+    .literally, .literally * {
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box
+    }
+
+    .literally .lc-drawing {
+        border: 1px solid #555555;
+        top: 31px;
+        bottom: 0;
+        right: 0;
+        left: 0;
+    }
+
+    .literally > * {
+        position: absolute
+    }
+
+    .literally .lc-picker {
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 65px;
+        background-color: #ffffff;
+        border: 1px solid #555555
+    }
+
+    .literally .lc-drawing > * {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0
+    }
+
+    .literally .lc-drawing {
+        right: 0;
+        left: 61px;
+        cursor: default
+    }
+
+    .literally .lc-picker .toolbar-button {
+        width: 26px;
+        height: 26px;
+        line-height: 26px;
+        margin: 2px;
+        padding: 0;
+        cursor: pointer;
+        text-align: center;
+        border: 2px solid transparent;
+        border-radius: 3px;
+        text-decoration: none;
+        cursor: pointer;
+        background-color: #ffffff;
+    }
+
+    .literally .lc-picker .thin-button {
+        cursor: pointer;
+        float: left;
+        position: relative
+    }
+
+    .literally .lc-picker .fat-button {
+        clear: both;
+        font-size: small;
+        width: 60px
+    }
+
+    .literally .lc-picker .lc-pick-tool {
+        background-size: 100% auto;
+        background-repeat: no-repeat;
+        background-position: center center
+    }
+
+    .literally .color-well {
+        font-size: 10px;
+        float: left;
+        width: 60px
+    }
+
+    .literally .horz-toolbar {
+        border: 1px solid #555555;
+        z-index: 1;
+        right: 0;
+        top: 0;
+        left: 65px;
+        height: 31px;
+        background-color: #ffffff
+    }
+
+    .literally .horz-toolbar .square-toolbar-button {
         font-size: x-small;
-        display: block;
-    }
-    .icon-line{
-        background-image : url(/assets/svg_diagram_editor/line.svg);
-    }
-    .icon-pencil{
-        background-image : url(/assets/svg_diagram_editor/pencil.svg);
-    }
-    .icon-rect{
-        background-image : url(/assets/svg_diagram_editor/rectangle.svg);
-    }
-    .icon-circle{
-        background-image : url(/assets/svg_diagram_editor/circle.svg);
-    }
-    .icon-text{
-        background-image : url(/assets/svg_diagram_editor/text.svg);
-    }
-    .icon-polygon{
-        background-image : url(/assets/svg_diagram_editor/polygon.svg);
-    }
-    .icon-eye-dropper{
-        background-image : url(/assets/svg_diagram_editor/eye-dropper.svg);
+        border: 2px solid transparent;
+        border-radius: 3px;
+        margin: 1px;
+        border: 1px solid #aaa;
+        width: 28px;
+        height: 28px;
+        float: left;
+        position: relative;
+        padding-left: 3px;
     }
 </style>

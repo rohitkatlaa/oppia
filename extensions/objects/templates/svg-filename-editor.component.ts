@@ -40,12 +40,14 @@ angular.module('oppia').component('svgFilenameEditor', {
     'AssetsBackendApiService', 'ContextService', 'CsrfTokenService',
     'ImageLocalStorageService', 'ImagePreloaderService',
     'ImageUploadHelperService', 'LiterallyCanvasHelperService',
-    'UrlInterpolationService', 'IMAGE_SAVE_DESTINATION_LOCAL_STORAGE',
+    'UrlInterpolationService', 'WindowDimensionsService',
+    'IMAGE_SAVE_DESTINATION_LOCAL_STORAGE',
     function($http, $q, $sce, $scope, AlertsService,
         AssetsBackendApiService, ContextService, CsrfTokenService,
         ImageLocalStorageService, ImagePreloaderService,
         ImageUploadHelperService, LiterallyCanvasHelperService,
-        UrlInterpolationService, IMAGE_SAVE_DESTINATION_LOCAL_STORAGE) {
+        UrlInterpolationService, WindowDimensionsService,
+        IMAGE_SAVE_DESTINATION_LOCAL_STORAGE) {
       const ctrl = this;
       // These max width and height paramameters were determined by manual
       // testing and reference from OUTPUT_IMAGE_MAX_WIDTH_PX in
@@ -322,8 +324,8 @@ angular.module('oppia').component('svgFilenameEditor', {
           ctrl.isDiagramSaved() && ctrl.data.savedSVGFileName &&
           ctrl.data.savedSVGFileName.length > 0);
       };
+
       ctrl.createRect =function() {
-        console.log("hello")
         var rect = new fabric.Rect({
           top : 10,
           left : 10,
@@ -335,6 +337,23 @@ angular.module('oppia').component('svgFilenameEditor', {
       }
 
       ctrl.$onInit = function() {
+        var canvas = document.getElementById('canvas');
+          // Make it visually fill the positioned parent
+          canvas.style.width ='100%';
+          canvas.style.height='100%';
+          // ...then set the internal size to match
+          canvas.width  = canvas.offsetWidth;
+          canvas.height = canvas.offsetHeight;
+          
+        // WindowDimensionsService.registerOnResizeHook(function() {
+        //   var canvas = document.getElementById('canvas');
+        //   // Make it visually fill the positioned parent
+        //   canvas.style.width ='100%';
+        //   canvas.style.height='100%';
+        //   // ...then set the internal size to match
+        //   canvas.width  = canvas.offsetWidth;
+        //   canvas.height = canvas.offsetHeight;
+        // })
 
       //   console.log(fabric);
         ctrl.canvas = new fabric.Canvas('canvas');
