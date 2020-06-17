@@ -5,39 +5,39 @@
     <div class="vertical-toolbar">
         <div>
             <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/pencil.svg);">
+                style="background-image:url(/assets/svg_diagram_editor/pencil.svg);" ng-click="$ctrl.createPencilDrawing()">
             </button>
             <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/line.svg);">
+                style="background-image:url(/assets/svg_diagram_editor/line.svg);" ng-click="$ctrl.createLine()">
             </button>
             <button class="icon-tool toolbar-button thin-button"
                 style="background-image:url(/assets/svg_diagram_editor/rectangle.svg);" ng-click="$ctrl.createRect()">
             </button>
             <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/circle.svg);">
+                style="background-image:url(/assets/svg_diagram_editor/circle.svg);" ng-click="$ctrl.createCircle()">
             </button>
             <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/text.svg);">
+                style="background-image:url(/assets/svg_diagram_editor/text.svg);" ng-click="$ctrl.createText()">
             </button>
             <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/polygon.svg);">
+                style="background-image:url(/assets/svg_diagram_editor/polygon.svg);" ng-click="$ctrl.createPolygon()">
             </button>
             <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/eye-dropper.svg);">
+                style="background-image:url(/assets/svg_diagram_editor/eye-dropper.svg);" ng-click="$ctrl.copyColor()">
             </button>
             <div class="vert-bottom-toolbar">
                 <div>
                     <div class="color-well">
                         <div>Stroke</div>
-                        <input type="color">
+                        <div id="stroke-color" class="colorPicker"></div>
                     </div>
                     <div class="color-well">
                         <div>Fill</div>
-                        <input type="color">
+                        <div id="fill-color" class="colorPicker"></div>
                     </div>
                     <div class="color-well">
                         <div>bg</div>
-                        <input type="color">
+                        <div id="bg-color" class="colorPicker"></div>
                     </div>
                 </div>
                 <div>
@@ -48,47 +48,27 @@
                         style="background-image:url(/assets/svg_diagram_editor/redo.svg);">
                     </button>
                 </div>
-                <button class="toolbar-button fat-button">Remove</button>
+                <button class="toolbar-button fat-button" ng-click="$ctrl.removeShape()">Remove</button>
                 <button class="toolbar-button fat-button">Clear</button>
             </div>
         </div>
     </div>
     <div class="horz-toolbar">
-        <div>
-            <div>
-                <button class="square-toolbar-button">
-                    1px
-                </button>
-            </div>
-            <div>
-                <button class="square-toolbar-button">
-                    2px
-                </button>
-            </div>
-            <div>
-                <button class="square-toolbar-button">
-                    3px
-                </button>
-            </div>
-            <div>
-                <button class="square-toolbar-button">
-                    5px
-                </button>
-            </div>
-            <div>
-                <button class="square-toolbar-button">
-                    10px
-                </button>
-            </div>
-            <div>
-                <button class="square-toolbar-button">
-                    30px
-                </button>
-            </div>
+        <div class="input-tag">
+            <input type="checkbox" ng-model="$ctrl.fabricjsOptions.italic" ng-change="$ctrl.onItalicToggle()"><span style="padding-left: 3px;">Italic</span>
         </div>
+        <div class="input-tag">
+            <input type="checkbox" ng-model="$ctrl.fabricjsOptions.bold" ng-change="$ctrl.onBoldToggle()"><span style="padding-left: 3px;">Bold</span>
+        </div>
+        <div class="input-tag">
+            <select ng-model="$ctrl.fabricjsOptions.fontFamily" ng-options="font for font in $ctrl.fontFamily" ng-change="$ctrl.onFontChange()"></select>
+        </div>
+        <div class="input-tag">
+            <select ng-model="$ctrl.fabricjsOptions.size" ng-options="size for size in $ctrl.sizes" ng-change="$ctrl.onSizeChange()"></select>
+        </div>  
     </div>
 </div>
-
+<button ng-click="$ctrl.print()">print Data</button>
 <style>
     .svg-editor {
         background-color: #ffffff;
@@ -112,7 +92,8 @@
         cursor: default;
         left: 62px;
         right: 0;
-        top: 31px;
+        top: 0;
+        bottom: 31px;
     }
 
     .svg-editor .horz-toolbar {
@@ -121,19 +102,18 @@
         height: 31px;
         left: 62px;
         right: 0;
-        top: 0;
+        bottom: 0;
     }
 
-    .svg-editor .horz-toolbar .square-toolbar-button {
-        border: 1px solid #aaa;
+    .svg-editor .horz-toolbar .input-tag {
         border-radius: 3px;
         float: left;
-        font-size: x-small;
+        font-size: small;
         height: 28px;
         margin: 1px;
         padding-left: 3px;
+        padding-top: 5px;
         position: relative;
-        width: 28px;
     }
 
     .svg-editor .vertical-toolbar {
@@ -187,5 +167,13 @@
         text-align: center;
         padding-bottom: 3px;
         width: 60px
+    }
+    .svg-editor .vertical-toolbar .vert-bottom-toolbar .color-well .colorPicker {
+        border: 1px solid #000000;
+        border-radius: 3px;
+        height: 28px;
+        margin: 0 auto;
+        width: 28px;
+        background-color: #000000;
     }
 </style>

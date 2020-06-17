@@ -27,6 +27,7 @@ require('services/image-upload-helper.service.ts');
 
 const LC = require('literallycanvas');
 const { fabric } = require('fabric');
+import Picker from 'vanilla-picker';
 require('literallycanvas/lib/css/literallycanvas.css');
 require('services/literally-canvas-helper.service.ts');
 
@@ -59,6 +60,34 @@ angular.module('oppia').component('svgFilenameEditor', {
       var ALLOWED_STROKE_WIDTHS = [1, 2, 3, 5, 30];
       const STATUS_EDITING = 'editing';
       const STATUS_SAVED = 'saved';
+      const DRAW_MODE_POLY = 'polygon';
+      const DRAW_MODE_NONE = 'none';
+      ctrl.drawMode = DRAW_MODE_NONE;
+      ctrl.polyOptions = {
+        x: 0,
+        y: 0,
+        bboxPoints: [],
+        lines: [],
+        lineCounter: 0,
+        shape: null
+      }
+      ctrl.sizes = ['1px', '2px', '3px', '5px', '9px', '10px', '12px', '14px', '18px', '24px', '30px', '36px', '48px', '64px'];
+      ctrl.fontFamily = [
+        'arial',
+        'helvetica',
+        'myriad pro',
+        'delicious',
+        'verdana',
+        'georgia',
+        'courier',
+        'comic sans ms',
+        'impact',
+        'monaco',
+        'optima',
+        'hoefler text',
+        'plaster',
+        'engagement'
+      ];
       // Dynamically assign a unique id to each lc editor to avoid clashes
       // when there are multiple RTEs in the same page.
       ctrl.lcID = 'lc' + Math.floor(Math.random() * 100000).toString();
@@ -77,6 +106,16 @@ angular.module('oppia').component('svgFilenameEditor', {
       ctrl.entityType = ContextService.getEntityType();
       ctrl.imageSaveDestination = ContextService.getImageSaveDestination();
       ctrl.svgContainerStyle = {};
+      ctrl.fabricjsOptions = {
+        stroke: 'rgba(0, 0, 0, 1)',
+        strokeWidth: 5,
+        fill: 'rgba(0, 0, 0, 1)',
+        bg: 'rgba(0, 0, 0, 1)',
+        fontFamily: 'helvetica',
+        size: '18px',
+        bold: false,
+        italic: false
+      };
       var lcInitializingOptions = {
         imageSize: {
           width: ctrl.diagramWidth, height: ctrl.diagramHeight},
@@ -325,15 +364,244 @@ angular.module('oppia').component('svgFilenameEditor', {
           ctrl.data.savedSVGFileName.length > 0);
       };
 
-      ctrl.createRect =function() {
+      ctrl.createRect = function() {
+        var size = ctrl.fabricjsOptions.size;
         var rect = new fabric.Rect({
           top : 10,
           left : 10,
           width : 60,
           height : 70,
-          fill : 'green'
-      });
+          fill : ctrl.fabricjsOptions.fill,
+          stroke: ctrl.fabricjsOptions.stroke,
+          strokeWidth: parseInt(size.substring(0, size.length - 2)),
+        });
         ctrl.canvas.add(rect);
+      }
+
+      ctrl.createLine = function() {
+        var size = ctrl.fabricjsOptions.size;
+        var line = new fabric.Line([10, 10, 50, 50], {
+          stroke: ctrl.fabricjsOptions.stroke,
+          strokeWidth: parseInt(size.substring(0, size.length - 2)),
+        });
+        ctrl.canvas.add(line);
+      }
+
+      ctrl.createCircle = function() {
+        var size = ctrl.fabricjsOptions.size;
+        var circle = new fabric.Circle({
+          top : 10,
+          left : 10,
+          radius: 30,
+          fill : ctrl.fabricjsOptions.fill,
+          stroke: ctrl.fabricjsOptions.stroke,
+          strokeWidth: parseInt(size.substring(0, size.length - 2)),
+        });
+        ctrl.canvas.add(circle);
+      };
+
+      ctrl.createText = function() {
+        var size = ctrl.fabricjsOptions.size;
+        var text = new fabric.Textbox('Enter Text', {
+          top : 10,
+          left : 10,
+          fontFamily: ctrl.fabricjsOptions.fontFamily,
+          fontSize: parseInt(size.substring(0, size.length - 2)),
+          fill: ctrl.fabricjsOptions.fill,
+          fontWeight: ctrl.fabricjsOptions.bold ? 'bold' : 'normal',
+          fontStyle: ctrl.fabricjsOptions.italic ? 'italic' : 'normal',
+        });
+        ctrl.canvas.add(text);
+      };
+
+      ctrl.createPencilDrawing = function() {
+        var size = ctrl.fabricjsOptions.size;
+        ctrl.canvas.isDrawingMode = !ctrl.canvas.isDrawingMode;
+        ctrl.canvas.freeDrawingBrush.color = ctrl.fabricjsOptions.stroke;
+        ctrl.canvas.freeDrawingBrush.width = parseInt(size.substring(0, size.length - 2));
+      };
+
+      function PolyPoint(x, y) {
+        this.x = x;
+        this.y = y;
+      }
+
+      var findLeftPaddingForPolygon = function() {
+        var result = 999999;
+        for (var i = 0; i < ctrl.polyOptions.lineCounter; i++) {
+            if (ctrl.polyOptions.bboxPoints[i].y < result) {
+                result = ctrl.polyOptions.bboxPoints[i].y;
+            }
+        }
+        return Math.abs(result);
+      }
+
+      var findTopPaddingForPolygon = function() {
+        var result = 999999;
+        for (var i = 0; i < ctrl.polyOptions.lineCounter; i++) {
+            if (ctrl.polyOptions.bboxPoints[i].x < result) {
+                result = ctrl.polyOptions.bboxPoints[i].x;
+            }
+        }
+        return Math.abs(result);
+      }
+
+      var makePolygon = function() {
+        var left = findLeftPaddingForPolygon();
+        var top = findTopPaddingForPolygon();
+        var startPt = ctrl.polyOptions.bboxPoints[0];
+        ctrl.polyOptions.bboxPoints.push(new PolyPoint(startPt.x, startPt.y));
+        var shape = new fabric.Polyline(ctrl.polyOptions.bboxPoints, {
+          fill: ctrl.fabricjsOptions.fill,
+          stroke: ctrl.fabricjsOptions.stroke,
+          strokeWidth: ctrl.fabricjsOptions.strokeWidth,
+        });
+        return shape;
+      }
+
+      var createPolyShape = function() {
+        ctrl.polyOptions.lines.forEach(function(value){
+          ctrl.canvas.remove(value);
+        });
+        ctrl.polyOptions.shape = makePolygon();
+        ctrl.canvas.add(ctrl.polyOptions.shape);
+        ctrl.canvas.hoverCursor = "move";
+        ctrl.canvas.forEachObject(function(object) { 
+                object.selectable = true; 
+        });
+        ctrl.canvas.renderAll();
+        ctrl.polyOptions.bboxPoints = [];
+        ctrl.polyOptions.lines = [];
+        ctrl.polyOptions.lineCounter = 0;
+      }
+
+      var setPolyStartingPoint = function(options) {
+        var offset = angular.element(
+          document.getElementById('canvas')).offset();
+        ctrl.polyOptions.x = options.e.pageX - offset.left;
+        ctrl.polyOptions.y = options.e.pageY - offset.top;
+      }
+
+      ctrl.createPolygon = function() {
+        if (ctrl.drawMode === DRAW_MODE_POLY) {
+          ctrl.drawMode = DRAW_MODE_NONE;
+          createPolyShape();
+        } else {
+          ctrl.drawMode = DRAW_MODE_POLY;
+          ctrl.canvas.hoverCursor = "default";
+          ctrl.canvas.forEachObject(function(object) { 
+            object.selectable = false; 
+          });
+        }
+      };
+
+      ctrl.copyColor = function() {
+        // ctrl.fabricjsOptions.stroke = 
+      }
+
+      ctrl.removeShape = function() {
+        var shape = ctrl.canvas.getActiveObject();
+        if (shape) {
+          ctrl.canvas.remove(shape);
+        }
+      }
+
+      var onStrokeChange = function() {
+        var shape = ctrl.canvas.getActiveObject();
+        var strokeShapes = ['rect', 'circle', 'path', 'line']
+        if (shape && strokeShapes.indexOf(shape.get('type')) !== -1) {
+          shape.set({
+            stroke: ctrl.fabricjsOptions.stroke
+          });
+          ctrl.canvas.renderAll();
+        }
+      }
+
+      var onFillChange = function() {
+        var shape = ctrl.canvas.getActiveObject();
+        var fillShapes = ['rect', 'circle', 'path', 'textbox']
+        if (shape && fillShapes.indexOf(shape.get('type')) !== -1) {
+          shape.set({
+            fill: ctrl.fabricjsOptions.fill
+          });
+          ctrl.canvas.renderAll();
+        }
+      }
+
+      var onBgChange = function() {
+        ctrl.canvas.setBackgroundColor(ctrl.fabricjsOptions.bg);
+        ctrl.canvas.renderAll()
+      }
+
+      ctrl.onItalicToggle = function() {
+        var shape = ctrl.canvas.getActiveObject();
+        if (shape && shape.get('type') === 'textbox') {
+          shape.set({
+            fontStyle: ctrl.fabricjsOptions.italic ? 'italic' : 'normal',
+          })
+          ctrl.canvas.renderAll();
+        }
+      }
+
+      ctrl.onBoldToggle = function() {
+        var shape = ctrl.canvas.getActiveObject();
+        if (shape && shape.get('type') === 'textbox') {
+          shape.set({
+            fontWeight: ctrl.fabricjsOptions.bold ? 'bold' : 'normal',
+          })
+          ctrl.canvas.renderAll();
+        }
+      }
+
+      ctrl.onFontChange = function() {
+        var shape = ctrl.canvas.getActiveObject();
+        if (shape && shape.get('type') === 'textbox') {
+          shape.set({
+            fontFamily: ctrl.fabricjsOptions.fontFamily,
+          })
+          ctrl.canvas.renderAll();
+        }
+      }
+
+      ctrl.onSizeChange = function() {
+        var shape = ctrl.canvas.getActiveObject();
+        var size = ctrl.fabricjsOptions.size;
+        var strokeWidthShapes = ['rect', 'circle', 'path', 'line']
+        if (shape &&  strokeWidthShapes.indexOf(shape.get('type')) !== -1) {
+          shape.set({
+            strokeWidth: parseInt(size.substring(0, size.length - 2))
+          });
+          ctrl.canvas.renderAll();
+        } else if (shape && shape.get('type') === 'textbox') {
+          shape.set({
+            fontSize: parseInt(size.substring(0, size.length - 2))
+          });
+          ctrl.canvas.renderAll();
+        }
+      }
+
+      ctrl.print = function() {
+        console.log(ctrl.canvas)
+        console.log(ctrl.canvas.getActiveObject())
+        console.log(ctrl.canvas.toSVG());
+      }
+
+      var createColorPicker = function(value) {
+        var parent = document.getElementById(value + '-color');
+        var onChangeFunc = {
+          stroke: onStrokeChange,
+          fill: onFillChange,
+          bg: onBgChange
+        }
+        var picker = new Picker(parent);
+        picker.setOptions({
+          color : ctrl.fabricjsOptions[value]
+        })
+        picker.onChange = function(color) {
+            parent.style.background = color.rgbaString;
+            ctrl.fabricjsOptions[value] = color.rgbaString;
+            onChangeFunc[value]();
+        };
       }
 
       ctrl.$onInit = function() {
@@ -344,6 +612,10 @@ angular.module('oppia').component('svgFilenameEditor', {
           // ...then set the internal size to match
           canvas.width  = canvas.offsetWidth;
           canvas.height = canvas.offsetHeight;
+
+          createColorPicker('stroke');
+          createColorPicker('fill');
+          createColorPicker('bg');
           
         // WindowDimensionsService.registerOnResizeHook(function() {
         //   var canvas = document.getElementById('canvas');
@@ -358,15 +630,6 @@ angular.module('oppia').component('svgFilenameEditor', {
       //   console.log(fabric);
         ctrl.canvas = new fabric.Canvas('canvas');
 
-        var rect = new fabric.Rect({
-            top : 100,
-            left : 100,
-            width : 60,
-            height : 70,
-            fill : 'red'
-        });
-
-        ctrl.canvas.add(rect);
         fabric.loadSVGFromURL("http://fabricjs.com/assets/1.svg", function(objects,options) {
 
           var loadedObjects = fabric.util.groupSVGElements(objects, options);
@@ -378,8 +641,44 @@ angular.module('oppia').component('svgFilenameEditor', {
           
           ctrl.canvas.add(loadedObjects);
           ctrl.canvas.renderAll();
-          // console.log(ctrl.canvas.toSVG());
 
+
+          // Adding event listener for polygon tool
+          fabric.util.addListener(window, 'dblclick', function() {
+            if (ctrl.drawMode === DRAW_MODE_POLY) {
+              ctrl.drawMode = DRAW_MODE_NONE;
+              createPolyShape();
+            }
+          })
+
+          ctrl.canvas.on('mouse:down', function(options) {
+            if (ctrl.drawMode === DRAW_MODE_POLY) {
+              setPolyStartingPoint(options);
+              var x = ctrl.polyOptions.x;
+              var y = ctrl.polyOptions.y;
+              ctrl.polyOptions.bboxPoints.push(new PolyPoint(x, y));
+              var points = [x, y, x, y];
+              var line = new fabric.Line(points, {
+                strokeWidth: ctrl.fabricjsOptions.strokeWidth,
+                selectable: false,
+                stroke: ctrl.fabricjsOptions.stroke
+              });
+              ctrl.polyOptions.lines.push(line);
+              ctrl.canvas.add(ctrl.polyOptions.lines[ctrl.polyOptions.lineCounter]);
+              ctrl.polyOptions.lineCounter++;
+            }
+          })
+
+          ctrl.canvas.on('mouse:move', function(options) {
+            if (ctrl.polyOptions.lines.length !== 0 && ctrl.drawMode === DRAW_MODE_POLY) {
+              setPolyStartingPoint(options);
+              ctrl.polyOptions.lines[ctrl.polyOptions.lineCounter - 1].set({
+                x2: ctrl.polyOptions.x,
+                y2: ctrl.polyOptions.y,
+              });
+              ctrl.canvas.renderAll();
+            }
+          })
       });
 
       //   LC.defineSVGRenderer(

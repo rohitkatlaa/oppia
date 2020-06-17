@@ -122,6 +122,7 @@
     "react": "^16.1.1",
     "react-dom": "^16.1.2",
     "react-dom-factories": "^1.0.2",
+    "vanilla-picker": "^2.10.1",
     "wavesurfer.js": "^3.3.3"
   }
 }
