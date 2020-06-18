@@ -25,11 +25,8 @@ require('services/csrf-token.service.ts');
 require('services/image-local-storage.service.ts');
 require('services/image-upload-helper.service.ts');
 
-const LC = require('literallycanvas');
 const { fabric } = require('fabric');
 import Picker from 'vanilla-picker';
-require('literallycanvas/lib/css/literallycanvas.css');
-require('services/literally-canvas-helper.service.ts');
 
 angular.module('oppia').component('svgFilenameEditor', {
   template: require('./svg-filename-editor.component.html'),
@@ -40,15 +37,13 @@ angular.module('oppia').component('svgFilenameEditor', {
     '$http', '$q', '$sce', '$scope', 'AlertsService',
     'AssetsBackendApiService', 'ContextService', 'CsrfTokenService',
     'ImageLocalStorageService', 'ImagePreloaderService',
-    'ImageUploadHelperService', 'LiterallyCanvasHelperService',
-    'UrlInterpolationService', 'WindowDimensionsService',
-    'IMAGE_SAVE_DESTINATION_LOCAL_STORAGE',
+    'ImageUploadHelperService', 'UrlInterpolationService',
+    'WindowDimensionsService', 'IMAGE_SAVE_DESTINATION_LOCAL_STORAGE',
     function($http, $q, $sce, $scope, AlertsService,
         AssetsBackendApiService, ContextService, CsrfTokenService,
         ImageLocalStorageService, ImagePreloaderService,
-        ImageUploadHelperService, LiterallyCanvasHelperService,
-        UrlInterpolationService, WindowDimensionsService,
-        IMAGE_SAVE_DESTINATION_LOCAL_STORAGE) {
+        ImageUploadHelperService, UrlInterpolationService,
+        WindowDimensionsService, IMAGE_SAVE_DESTINATION_LOCAL_STORAGE) {
       const ctrl = this;
       // These max width and height paramameters were determined by manual
       // testing and reference from OUTPUT_IMAGE_MAX_WIDTH_PX in
@@ -95,7 +90,7 @@ angular.module('oppia').component('svgFilenameEditor', {
       ];
       // Dynamically assign a unique id to each lc editor to avoid clashes
       // when there are multiple RTEs in the same page.
-      ctrl.lcID = 'lc' + Math.floor(Math.random() * 100000).toString();
+      ctrl.canvasID = 'canvas' + Math.floor(Math.random() * 100000).toString();
       ctrl.canvasElement = null;
       ctrl.fillPicker = null;
       ctrl.diagramWidth = 450;
@@ -110,10 +105,6 @@ angular.module('oppia').component('svgFilenameEditor', {
       ctrl.isRedo = false;
       ctrl.undoLimit = 5;
       ctrl.savedSVGDiagram = '';
-      ctrl.invalidTagsAndAttributes = {
-        tags: [],
-        attrs: []
-      };
       ctrl.entityId = ContextService.getEntityId();
       ctrl.entityType = ContextService.getEntityType();
       ctrl.imageSaveDestination = ContextService.getImageSaveDestination();
@@ -128,43 +119,17 @@ angular.module('oppia').component('svgFilenameEditor', {
         bold: false,
         italic: false
       };
-      var lcInitializingOptions = {
-        imageSize: {
-          width: ctrl.diagramWidth, height: ctrl.diagramHeight},
-        imageURLPrefix: (
-          '/third_party/static/literallycanvas-0.5.2/lib/img'),
-        toolbarPosition: 'bottom',
-        defaultStrokeWidth: DEFAULT_STROKE_WIDTH,
-        strokeWidths: ALLOWED_STROKE_WIDTHS,
-        // Eraser tool is removed because svgRenderer has not been
-        // implemented in LiterallyCanvas. It can be included once
-        // svgRenderer function is implemented.
-        tools: [
-          LC.tools.Pencil,
-          LC.tools.Line,
-          LC.tools.Ellipse,
-          LC.tools.Rectangle,
-          LC.tools.Text,
-          LC.tools.Polygon,
-          LC.tools.Pan,
-          LC.tools.Eyedropper
-        ]
-      };
       ctrl.enableRemoveButton = false;
 
       ctrl.onWidthInputBlur = function() {
         if (ctrl.diagramWidth < MAX_DIAGRAM_WIDTH) {
           ctrl.currentDiagramWidth = ctrl.diagramWidth;
-          ctrl.lc.setImageSize(
-            ctrl.currentDiagramWidth, ctrl.currentDiagramHeight);
         }
       };
 
       ctrl.onHeightInputBlur = function() {
         if (ctrl.diagramHeight < MAX_DIAGRAM_HEIGHT) {
           ctrl.currentDiagramHeight = ctrl.diagramHeight;
-          ctrl.lc.setImageSize(
-            ctrl.currentDiagramWidth, ctrl.currentDiagramHeight);
         }
       };
 
@@ -178,21 +143,14 @@ angular.module('oppia').component('svgFilenameEditor', {
 
       ctrl.isDiagramCreated = function() {
         // This function checks if any shape has been created or not.
-        if (ctrl.lc !== undefined &&
-          ctrl.diagramStatus === STATUS_EDITING) {
-          var svgString = ctrl.lc.getSVGString();
-          var domParser = new DOMParser();
-          var doc = domParser.parseFromString(svgString, 'text/xml');
-          var elements = doc.querySelectorAll('svg > g > *');
-          if (elements.length > 0) {
-            return true;
-          }
-        }
-        return false;
+        return Boolean(
+          !ctrl.isUserDrawing() &&
+          ctrl.diagramStatus === STATUS_EDITING &&
+          ctrl.canvas && ctrl.canvas.getObjects().length > 0);
       };
 
       ctrl.isUserDrawing = function() {
-        return Boolean(ctrl.lc && ctrl.lc._shapesInProgress.length);
+        return Boolean(ctrl.canvas && ctrl.drawMode !== DRAW_MODE_NONE);
       };
 
       var getTrustedResourceUrlForSVGFileName = function(svgFileName) {
@@ -291,6 +249,17 @@ angular.module('oppia').component('svgFilenameEditor', {
         reader.readAsDataURL(resampledFile);
       };
 
+      var getSVGString = function() {
+        console.log(ctrl.canvas.toSVG());
+        var linesvg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="494" height="367" viewBox="0 0 494 367"><desc>Created with Fabric.js 3.6.3</desc><defs></defs><g transform="matrix(1 0 0 1 410 189)"  ><circle style="stroke: rgb(123,131,235); stroke-width: 18; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,136,136); fill-rule: nonzero; opacity: 1;"  cx="0" cy="0" r="30" /></g><g transform="matrix(0.1 -0.99 0.99 0.1 380 75)"  ><rect style="stroke: rgb(123,131,235); stroke-width: 18; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,136,136); fill-rule: nonzero; opacity: 1;"  x="-30" y="-35" rx="0" ry="0" width="60" height="70" /></g><g transform="matrix(1.37 -0.48 0.48 1.37 362.29 299.93)"  ><line style="stroke: rgb(123,131,235); stroke-width: 18; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;"  x1="-20" y1="-20" x2="20" y2="20" /></g><g transform="matrix(1 0 0 1 45.49 35.63)"  ><path style="stroke: rgb(123,131,235); stroke-width: 18; stroke-dasharray: none; stroke-linecap: round; stroke-dashoffset: 0; stroke-linejoin: round; stroke-miterlimit: 10; fill: none; fill-rule: nonzero; opacity: 1;"  transform=" translate(-45.49, -35.63)" d="M 34.482 24.625 Q 34.5 24.625 35 24.625 Q 35.5 24.625 36 24.625 Q 36.5 24.625 37.5 25.125 Q 38.5 25.625 39 25.625 Q 39.5 25.625 40.5 26.125 Q 41.5 26.625 42.5 27.625 Q 43.5 28.625 44 29.125 Q 44.5 29.625 45.5 30.625 Q 46.5 31.625 48 32.625 Q 49.5 33.625 50 34.125 Q 50.5 34.625 51.5 36.125 Q 52.5 37.625 53 38.125 Q 53.5 38.625 54 39.625 Q 54.5 40.625 55 41.625 Q 55.5 42.625 56 43.625 Q 56.5 44.625 56.5 45.125 Q 56.5 45.625 56.5 46.125 L 56.5 46.643" stroke-linecap="round" /></g><g transform="matrix(2.89 0 0 2.89 137.54 91.02)" style=""  ><text font-family="helvetica" font-size="18" font-style="normal" font-weight="normal" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,136,136); fill-rule: nonzero; opacity: 1; white-space: pre;" ><tspan x="-21.51" y="5.65" >hello</tspan></text></g><g transform="matrix(1 0 0 1 69.5 194.13)"  ><polyline style="stroke: rgb(123,131,235); stroke-width: 5; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,136,136); fill-rule: nonzero; opacity: 1;"  points="-15,-27.5 -47,22.5 40,37.5 47,-37.5 47,-37.5 -15,-27.5 " /></g><g transform="matrix(1 0 0 1 248.5 156.13)"  ><polyline style="stroke: rgb(123,131,235); stroke-width: 5; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,136,136); fill-rule: nonzero; opacity: 1;"  points="-65,8.5 -56,59.5 65,25.5 32,-59.5 32,-59.5 32,-59.5 " /></g></svg>';
+        return linesvg;
+        // return ctrl.canvas.toSVG();
+      }
+
+      var isSvgTagValid = function(svgString) {
+        return true;
+      }
+
       ctrl.saveSVGFile = function() {
         AlertsService.clearWarnings();
 
@@ -299,7 +268,7 @@ angular.module('oppia').component('svgFilenameEditor', {
           return;
         }
 
-        var svgString = ctrl.lc.getSVGString();
+        var svgString = getSVGString();
         var svgDataURI = 'data:image/svg+xml;base64,' + btoa(svgString);
         var dimensions = {
           width: ctrl.diagramWidth,
@@ -307,7 +276,7 @@ angular.module('oppia').component('svgFilenameEditor', {
         };
         let resampledFile;
 
-        if (LiterallyCanvasHelperService.isSvgTagValid(svgString)) {
+        if (isSvgTagValid(svgString)) {
           ctrl.savedSVGDiagram = svgString;
           resampledFile = (
             ImageUploadHelperService.convertImageDataToImageFile(
@@ -354,20 +323,14 @@ angular.module('oppia').component('svgFilenameEditor', {
             ctrl.data.savedSVGFileName);
         }
         ctrl.diagramStatus = STATUS_EDITING;
-        if (ctrl.lc !== undefined) {
-          ctrl.lc.teardown();
-        }
         ctrl.data = {};
-        ctrl.invalidTagsAndAttributes = {
-          tags: [],
-          attrs: []
-        };
         angular.element(document).ready(function() {
-          ctrl.lc = LC.init(
-            document.getElementById(ctrl.lcID), lcInitializingOptions);
-          var snapshot = LiterallyCanvasHelperService.parseSvg(
-            ctrl.savedSVGDiagram, ctrl.lc);
-          ctrl.lc.loadSnapshot(snapshot);
+          initializeFabricJs();
+          fabric.loadSVGFromString(ctrl.savedSVGDiagram, function(objects, options) {
+            objects.forEach(function(obj) {
+              ctrl.canvas.add(obj);
+            });
+          });
         });
       };
 
@@ -512,7 +475,7 @@ angular.module('oppia').component('svgFilenameEditor', {
 
       var setPolyStartingPoint = function(options) {
         var offset = angular.element(
-          document.getElementById('canvas')).offset();
+          document.getElementById(ctrl.canvasID)).offset();
         ctrl.polyOptions.x = options.e.pageX - offset.left;
         ctrl.polyOptions.y = options.e.pageY - offset.top;
       }
@@ -704,12 +667,6 @@ angular.module('oppia').component('svgFilenameEditor', {
         }
       }
 
-      ctrl.print = function() {
-        console.log(ctrl.canvas)
-        console.log(ctrl.canvas.getActiveObject())
-        console.log(ctrl.canvas.toSVG());
-      }
-
       var createColorPicker = function(value) {
         var parent = document.getElementById(value + '-color');
         var onChangeFunc = {
@@ -732,19 +689,19 @@ angular.module('oppia').component('svgFilenameEditor', {
         };
       }
 
-      ctrl.$onInit = function() {
-          ctrl.canvasElement = document.getElementById('canvas');
-          // Make it visually fill the positioned parent
-          ctrl.canvasElement.style.width ='100%';
-          ctrl.canvasElement.style.height='100%';
-          // ...then set the internal size to match
-          ctrl.canvasElement.width  = ctrl.canvasElement.offsetWidth;
-          ctrl.canvasElement.height = ctrl.canvasElement.offsetHeight;
+      var initializeFabricJs = function() {
+        ctrl.canvasElement = document.getElementById(ctrl.canvasID);
+        // Make it visually fill the positioned parent
+        ctrl.canvasElement.style.width ='100%';
+        ctrl.canvasElement.style.height='100%';
+        // ...then set the internal size to match
+        ctrl.canvasElement.width  = ctrl.canvasElement.offsetWidth;
+        ctrl.canvasElement.height = ctrl.canvasElement.offsetHeight;
 
-          createColorPicker('stroke');
-          createColorPicker('fill');
-          createColorPicker('bg');
-          
+        createColorPicker('stroke');
+        createColorPicker('fill');
+        createColorPicker('bg');
+        
         // WindowDimensionsService.registerOnResizeHook(function() {
         //   var canvas = document.getElementById('canvas');
         //   // Make it visually fill the positioned parent
@@ -755,8 +712,7 @@ angular.module('oppia').component('svgFilenameEditor', {
         //   canvas.height = canvas.offsetHeight;
         // })
 
-      //   console.log(fabric);
-        ctrl.canvas = new fabric.Canvas('canvas');
+        ctrl.canvas = new fabric.Canvas(ctrl.canvasID);
         ctrl.canvas.selection = false;
 
         // Adding event listener for polygon tool
@@ -833,46 +789,22 @@ angular.module('oppia').component('svgFilenameEditor', {
           ctrl.enableRemoveButton = false;
           ctrl.displayFontStyles = false;
         })
+      }
 
-        // fabric.loadSVGFromURL("http://fabricjs.com/assets/1.svg", function(objects,options) {
-
-        //   var loadedObjects = fabric.util.groupSVGElements(objects, options);
-
-        //   loadedObjects.set({
-        //           width: 200,
-        //           height: 200
-        //   });
-          
-        //   ctrl.canvas.add(loadedObjects);
-        //   ctrl.canvas.renderAll();  
-        // });
-
-      //   LC.defineSVGRenderer(
-      //     'Rectangle', LiterallyCanvasHelperService.rectangleSVGRenderer);
-      //   LC.defineSVGRenderer(
-      //     'Ellipse', LiterallyCanvasHelperService.ellipseSVGRenderer);
-      //   LC.defineSVGRenderer(
-      //     'Line', LiterallyCanvasHelperService.lineSVGRenderer);
-      //   LC.defineSVGRenderer(
-      //     'LinePath', LiterallyCanvasHelperService.linepathSVGRenderer);
-      //   LC.defineSVGRenderer(
-      //     'Polygon', LiterallyCanvasHelperService.polygonSVGRenderer);
-      //   LC.defineSVGRenderer(
-      //     'Text', LiterallyCanvasHelperService.textSVGRenderer);
-      //   if (ctrl.value) {
-      //     ctrl.setSavedSVGFilename(ctrl.value, true);
-      //     var dimensions = (
-      //       ImagePreloaderService.getDimensionsOfImage(ctrl.value));
-      //     ctrl.svgContainerStyle = {
-      //       height: dimensions.height + 'px',
-      //       width: dimensions.width + 'px'
-      //     };
-      //   } else {
-      //     angular.element(document).ready(function() {
-      //       ctrl.lc = LC.init(
-      //         document.getElementById(ctrl.lcID), lcInitializingOptions);
-      //     });
-      //   }
+      ctrl.$onInit = function() {
+        if (ctrl.value) {
+          ctrl.setSavedSVGFilename(ctrl.value, true);
+          var dimensions = (
+            ImagePreloaderService.getDimensionsOfImage(ctrl.value));
+          ctrl.svgContainerStyle = {
+            height: dimensions.height + 'px',
+            width: dimensions.width + 'px'
+          };
+        } else {
+          angular.element(document).ready(function() {
+            initializeFabricJs();
+          });
+        }
       };
     }
   ]
