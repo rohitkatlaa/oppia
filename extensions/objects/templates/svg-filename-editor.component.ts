@@ -61,10 +61,11 @@ angular.module('oppia').component('svgFilenameEditor', {
       const STATUS_EDITING = 'editing';
       const STATUS_SAVED = 'saved';
       const DRAW_MODE_POLY = 'polygon';
-      const OPEN_POLY_MODE = 'open';
-      const CLOSED_POLY_MODE = 'closed';
+      const DRAW_MODE_PENCIL = 'pencil';
       const DRAW_MODE_EYE_DROPPER = 'eyedropper';
       const DRAW_MODE_NONE = 'none';
+      const OPEN_POLY_MODE = 'open';
+      const CLOSED_POLY_MODE = 'closed';
       ctrl.drawMode = DRAW_MODE_NONE;
       ctrl.polyMode = 'closed';
       ctrl.polyOptions = {
@@ -103,6 +104,7 @@ angular.module('oppia').component('svgFilenameEditor', {
       ctrl.currentDiagramHeight = 350;
       ctrl.data = {};
       ctrl.diagramStatus = STATUS_EDITING;
+      ctrl.displayFontStyles = false;
       ctrl.objectUndoStack = [];
       ctrl.objectRedoStack = [];
       ctrl.isRedo = false;
@@ -119,7 +121,7 @@ angular.module('oppia').component('svgFilenameEditor', {
       ctrl.fabricjsOptions = {
         stroke: 'rgba(0, 0, 0, 1)',
         strokeWidth: 5,
-        fill: 'rgba(0, 0, 0, 0)',
+        fill: 'rgba(0, 0, 0, 1)',
         bg: 'rgba(0, 0, 0, 0)',
         fontFamily: 'helvetica',
         size: '18px',
@@ -148,6 +150,7 @@ angular.module('oppia').component('svgFilenameEditor', {
           LC.tools.Eyedropper
         ]
       };
+      ctrl.enableRemoveButton = false;
 
       ctrl.onWidthInputBlur = function() {
         if (ctrl.diagramWidth < MAX_DIAGRAM_WIDTH) {
@@ -426,11 +429,28 @@ angular.module('oppia').component('svgFilenameEditor', {
         ctrl.canvas.add(text);
       };
 
+      ctrl.areAllToolsEnabled = function() {
+        return ctrl.drawMode === DRAW_MODE_NONE;
+      }
+
+      ctrl.isDrawModePencil = function() {
+        return ctrl.drawMode === DRAW_MODE_PENCIL;
+      }
+
+      ctrl.isPencilEnabeled = function() {
+        return (
+          ctrl.areAllToolsEnabled() || ctrl.isDrawModePencil());
+      }
+
       ctrl.createPencilDrawing = function() {
         var size = ctrl.fabricjsOptions.size;
         ctrl.canvas.isDrawingMode = !ctrl.canvas.isDrawingMode;
         ctrl.canvas.freeDrawingBrush.color = ctrl.fabricjsOptions.stroke;
         ctrl.canvas.freeDrawingBrush.width = parseInt(size.substring(0, size.length - 2));
+        ctrl.drawMode = DRAW_MODE_NONE;
+        if (ctrl.canvas.isDrawingMode) {
+          ctrl.drawMode = DRAW_MODE_PENCIL;
+        }
       };
 
       function PolyPoint(x, y) {
@@ -503,22 +523,43 @@ angular.module('oppia').component('svgFilenameEditor', {
           createPolyShape();
         } else {
           ctrl.drawMode = DRAW_MODE_POLY;
-          ctrl.canvas.hoverCursor = "default";
+          ctrl.canvas.hoverCursor = 'default';
           ctrl.canvas.forEachObject(function(object) { 
             object.selectable = false; 
           });
         }
       };
 
+      ctrl.isDrawModePolygon = function() {
+        return ctrl.drawMode === DRAW_MODE_POLY;
+      }
+
+      ctrl.isOpenPolygonEnabeled = function() {
+        return (
+          ctrl.areAllToolsEnabled() || (
+            ctrl.isDrawModePolygon() && ctrl.polyMode === OPEN_POLY_MODE));
+      }
+
       ctrl.createOpenPolygon = function() {
         ctrl.polyMode = OPEN_POLY_MODE;  
         createPolygon();
       };
 
+      ctrl.isClosedPolygonEnabeled = function() {
+        return (
+          ctrl.areAllToolsEnabled() || (
+            ctrl.isDrawModePolygon() && ctrl.polyMode === CLOSED_POLY_MODE));
+      }
+
       ctrl.createClosedPolygon = function() {
         ctrl.polyMode = CLOSED_POLY_MODE;  
         createPolygon();
       };
+
+      ctrl.isEyeDropperEnabeled = function() {
+        return (
+          ctrl.areAllToolsEnabled() || ctrl.drawMode === DRAW_MODE_EYE_DROPPER);
+      }
 
       ctrl.copyColor = function() {
         ctrl.drawMode = DRAW_MODE_EYE_DROPPER;
@@ -584,6 +625,8 @@ angular.module('oppia').component('svgFilenameEditor', {
       }
 
       ctrl.onClear = function() {
+        ctrl.objectUndoStack = [];
+        ctrl.objectRedoStack = [];
         ctrl.canvas.clear();
       }
 
@@ -714,6 +757,7 @@ angular.module('oppia').component('svgFilenameEditor', {
 
       //   console.log(fabric);
         ctrl.canvas = new fabric.Canvas('canvas');
+        ctrl.canvas.selection = false;
 
         // Adding event listener for polygon tool
         fabric.util.addListener(window, 'dblclick', function() {
@@ -740,6 +784,7 @@ angular.module('oppia').component('svgFilenameEditor', {
             ctrl.polyOptions.lineCounter++;
           } else if (ctrl.drawMode === DRAW_MODE_EYE_DROPPER) {
             ctrl.drawMode = DRAW_MODE_NONE;
+            ctrl.canvas.discardActiveObject();
             var ctx = ctrl.canvasElement.getContext('2d');
             var mouse = ctrl.canvas.getPointer(options.e);
             var px = ctx.getImageData(parseInt(mouse.x), parseInt(mouse.y), 1, 1).data;
@@ -767,9 +812,6 @@ angular.module('oppia').component('svgFilenameEditor', {
         })
 
         ctrl.canvas.on('object:added', function() {
-          // if(ctrl.objectUndoStack.length === 5) {
-
-          // }
           if (!ctrl.isRedo) {
             undoStackPush({
               action : 'add',
@@ -778,6 +820,18 @@ angular.module('oppia').component('svgFilenameEditor', {
             ctrl.objectRedoStack = [];
           }
           ctrl.isRedo = false;
+        })
+
+        ctrl.canvas.on('selection:created', function() {
+          ctrl.enableRemoveButton = true;
+          if (ctrl.canvas.getActiveObject().get('type') === 'textbox') {
+            ctrl.displayFontStyles = true;
+          }
+        })
+
+        ctrl.canvas.on('selection:cleared', function() {
+          ctrl.enableRemoveButton = false;
+          ctrl.displayFontStyles = false;
         })
 
         // fabric.loadSVGFromURL("http://fabricjs.com/assets/1.svg", function(objects,options) {

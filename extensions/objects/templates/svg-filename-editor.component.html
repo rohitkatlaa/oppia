@@ -4,29 +4,37 @@
     </div>
     <div class="vertical-toolbar">
         <div>
-            <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/pencil.svg);" ng-click="$ctrl.createPencilDrawing()" tooltip-placement="bottom" uib-tooltip="Pencil">
+            <button class="icon-tool toolbar-button thin-button" ng-class="{'disabled' : !$ctrl.isPencilEnabeled()}"
+                style="background-image:url(/assets/svg_diagram_editor/pencil.svg);" ng-click="$ctrl.createPencilDrawing()"
+                tooltip-placement="left" uib-tooltip="Pencil" ng-disabled="!$ctrl.isPencilEnabeled()">
             </button>
-            <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/line.svg);" ng-click="$ctrl.createLine()" tooltip-placement="bottom" uib-tooltip="Line">
+            <button class="icon-tool toolbar-button thin-button" ng-class="{'disabled' : !$ctrl.areAllToolsEnabled()}"
+                style="background-image:url(/assets/svg_diagram_editor/line.svg);" ng-click="$ctrl.createLine()"
+                tooltip-placement="right" uib-tooltip="Line" ng-disabled="!$ctrl.areAllToolsEnabled()">
             </button>
-            <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/rectangle.svg);" ng-click="$ctrl.createRect()" tooltip-placement="bottom" uib-tooltip="Rectangle">
+            <button class="icon-tool toolbar-button thin-button" ng-class="{'disabled' : !$ctrl.areAllToolsEnabled()}" 
+                style="background-image:url(/assets/svg_diagram_editor/rectangle.svg);" ng-click="$ctrl.createRect()"
+                tooltip-placement="left" uib-tooltip="Rectangle" ng-disabled="!$ctrl.areAllToolsEnabled()">
             </button>
-            <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/circle.svg);" ng-click="$ctrl.createCircle()" tooltip-placement="bottom" uib-tooltip="Circle">
+            <button class="icon-tool toolbar-button thin-button" ng-class="{'disabled' : !$ctrl.areAllToolsEnabled()}" 
+                style="background-image:url(/assets/svg_diagram_editor/circle.svg);" ng-click="$ctrl.createCircle()"
+                tooltip-placement="right" uib-tooltip="Circle" ng-disabled="!$ctrl.areAllToolsEnabled()">
             </button>
-            <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/text.svg);" ng-click="$ctrl.createText()" tooltip-placement="bottom" uib-tooltip="Text">
+            <button class="icon-tool toolbar-button thin-button" ng-class="{'disabled' : !$ctrl.areAllToolsEnabled()}" 
+                style="background-image:url(/assets/svg_diagram_editor/text.svg);" ng-click="$ctrl.createText()"
+                tooltip-placement="left" uib-tooltip="Text" ng-disabled="!$ctrl.areAllToolsEnabled()">
             </button>
-            <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/closed_polygon.svg);" ng-click="$ctrl.createClosedPolygon()" tooltip-placement="bottom" uib-tooltip="Closed Polygon">
+            <button class="icon-tool toolbar-button thin-button" ng-class="{'disabled' : !$ctrl.isClosedPolygonEnabeled()}" 
+                style="background-image:url(/assets/svg_diagram_editor/closed_polygon.svg);" ng-click="$ctrl.createClosedPolygon()"
+                tooltip-placement="right" uib-tooltip="Closed Polygon" ng-disabled="!$ctrl.isClosedPolygonEnabeled()">
             </button>
-            <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/open_polygon.svg);" ng-click="$ctrl.createOpenPolygon()" tooltip-placement="bottom" uib-tooltip="Open Polygon">
+            <button class="icon-tool toolbar-button thin-button" ng-class="{'disabled' : !$ctrl.isOpenPolygonEnabeled()}" 
+                style="background-image:url(/assets/svg_diagram_editor/open_polygon.svg);" ng-click="$ctrl.createOpenPolygon()"
+                tooltip-placement="left" uib-tooltip="Open Polygon" ng-disabled="!$ctrl.isOpenPolygonEnabeled()">
             </button>
-            <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/eye-dropper.svg);" ng-click="$ctrl.copyColor()"  tooltip-placement="bottom" uib-tooltip="Eye Dropper">
+            <button class="icon-tool toolbar-button thin-button" ng-class="{'disabled' : !$ctrl.isEyeDropperEnabeled()}" 
+                style="background-image:url(/assets/svg_diagram_editor/eye-dropper.svg);" ng-click="$ctrl.copyColor()"
+                tooltip-placement="right" uib-tooltip="Eye Dropper" ng-disabled="!$ctrl.isEyeDropperEnabeled()">
             </button>
             <div class="vert-bottom-toolbar">
                 <div>
@@ -44,31 +52,37 @@
                     </div>
                 </div>
                 <div>
-                    <button class="icon-tool toolbar-button thin-button"
-                        style="background-image:url(/assets/svg_diagram_editor/undo.svg);" ng-click="$ctrl.onUndo()">
+                    <button class="icon-tool toolbar-button thin-button" ng-class="{'disabled' : !$ctrl.objectUndoStack.length}"
+                        style="background-image:url(/assets/svg_diagram_editor/undo.svg);" ng-click="$ctrl.onUndo()" ng-disabled="!$ctrl.objectUndoStack.length">
                     </button>
-                    <button class="icon-tool toolbar-button thin-button"
-                        style="background-image:url(/assets/svg_diagram_editor/redo.svg);" ng-click="$ctrl.onRedo()">
+                    <button class="icon-tool toolbar-button thin-button" ng-class="{'disabled' : !$ctrl.objectRedoStack.length}"
+                        style="background-image:url(/assets/svg_diagram_editor/redo.svg);" ng-click="$ctrl.onRedo()" ng-disabled="!$ctrl.objectRedoStack.length">
                     </button>
                 </div>
-                <button class="toolbar-button fat-button" ng-click="$ctrl.removeShape()">Remove</button>
+                <button class="toolbar-button fat-button" ng-click="$ctrl.removeShape()" ng-disabled="!$ctrl.enableRemoveButton">Remove</button>
                 <button class="toolbar-button fat-button" ng-click="$ctrl.onClear()">Clear</button>
             </div>
         </div>
     </div>
     <div class="horz-toolbar">
-        <div class="input-tag">
+        <div class="input-tag" ng-if="$ctrl.displayFontStyles">
             <input type="checkbox" ng-model="$ctrl.fabricjsOptions.italic" ng-change="$ctrl.onItalicToggle()"><span style="padding-left: 3px;">Italic</span>
         </div>
-        <div class="input-tag">
+        <div class="input-tag" ng-if="$ctrl.displayFontStyles">
             <input type="checkbox" ng-model="$ctrl.fabricjsOptions.bold" ng-change="$ctrl.onBoldToggle()"><span style="padding-left: 3px;">Bold</span>
         </div>
-        <div class="input-tag">
+        <div class="input-tag" ng-if="$ctrl.displayFontStyles">
             <select ng-model="$ctrl.fabricjsOptions.fontFamily" ng-options="font for font in $ctrl.fontFamily" ng-change="$ctrl.onFontChange()"></select>
         </div>
         <div class="input-tag">
             <select ng-model="$ctrl.fabricjsOptions.size" ng-options="size for size in $ctrl.sizes" ng-change="$ctrl.onSizeChange()"></select>
-        </div>  
+        </div>
+        <div class="input-tag" ng-if="$ctrl.isDrawModePencil()" style="color: #f00101;">
+            Click the pencil button to exit free drawing mode.
+        </div>
+        <div class="input-tag" ng-if="$ctrl.isDrawModePolygon()" style="color: #f00101;">
+            Double click to complete the polygon.
+        </div>
     </div>
 </div>
 <button ng-click="$ctrl.print()">print Data</button>
@@ -138,6 +152,11 @@
         background-position: center center;
         background-repeat: no-repeat;
         background-size: 100% auto;
+    }
+
+    .svg-editor .vertical-toolbar .icon-tool.disabled {
+        opacity: 0.4;
+        filter: alpha(opacity=40);
     }
 
     .svg-editor .vertical-toolbar .thin-button {
