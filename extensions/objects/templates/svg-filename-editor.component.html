@@ -5,25 +5,28 @@
     <div class="vertical-toolbar">
         <div>
             <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/pencil.svg);" ng-click="$ctrl.createPencilDrawing()">
+                style="background-image:url(/assets/svg_diagram_editor/pencil.svg);" ng-click="$ctrl.createPencilDrawing()" tooltip-placement="bottom" uib-tooltip="Pencil">
             </button>
             <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/line.svg);" ng-click="$ctrl.createLine()">
+                style="background-image:url(/assets/svg_diagram_editor/line.svg);" ng-click="$ctrl.createLine()" tooltip-placement="bottom" uib-tooltip="Line">
             </button>
             <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/rectangle.svg);" ng-click="$ctrl.createRect()">
+                style="background-image:url(/assets/svg_diagram_editor/rectangle.svg);" ng-click="$ctrl.createRect()" tooltip-placement="bottom" uib-tooltip="Rectangle">
             </button>
             <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/circle.svg);" ng-click="$ctrl.createCircle()">
+                style="background-image:url(/assets/svg_diagram_editor/circle.svg);" ng-click="$ctrl.createCircle()" tooltip-placement="bottom" uib-tooltip="Circle">
             </button>
             <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/text.svg);" ng-click="$ctrl.createText()">
+                style="background-image:url(/assets/svg_diagram_editor/text.svg);" ng-click="$ctrl.createText()" tooltip-placement="bottom" uib-tooltip="Text">
             </button>
             <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/polygon.svg);" ng-click="$ctrl.createPolygon()">
+                style="background-image:url(/assets/svg_diagram_editor/closed_polygon.svg);" ng-click="$ctrl.createClosedPolygon()" tooltip-placement="bottom" uib-tooltip="Closed Polygon">
             </button>
             <button class="icon-tool toolbar-button thin-button"
-                style="background-image:url(/assets/svg_diagram_editor/eye-dropper.svg);" ng-click="$ctrl.copyColor()">
+                style="background-image:url(/assets/svg_diagram_editor/open_polygon.svg);" ng-click="$ctrl.createOpenPolygon()" tooltip-placement="bottom" uib-tooltip="Open Polygon">
+            </button>
+            <button class="icon-tool toolbar-button thin-button"
+                style="background-image:url(/assets/svg_diagram_editor/eye-dropper.svg);" ng-click="$ctrl.copyColor()"  tooltip-placement="bottom" uib-tooltip="Eye Dropper">
             </button>
             <div class="vert-bottom-toolbar">
                 <div>
@@ -42,14 +45,14 @@
                 </div>
                 <div>
                     <button class="icon-tool toolbar-button thin-button"
-                        style="background-image:url(/assets/svg_diagram_editor/undo.svg);">
+                        style="background-image:url(/assets/svg_diagram_editor/undo.svg);" ng-click="$ctrl.onUndo()">
                     </button>
                     <button class="icon-tool toolbar-button thin-button"
-                        style="background-image:url(/assets/svg_diagram_editor/redo.svg);">
+                        style="background-image:url(/assets/svg_diagram_editor/redo.svg);" ng-click="$ctrl.onRedo()">
                     </button>
                 </div>
                 <button class="toolbar-button fat-button" ng-click="$ctrl.removeShape()">Remove</button>
-                <button class="toolbar-button fat-button">Clear</button>
+                <button class="toolbar-button fat-button" ng-click="$ctrl.onClear()">Clear</button>
             </div>
         </div>
     </div>

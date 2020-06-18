@@ -61,8 +61,12 @@ angular.module('oppia').component('svgFilenameEditor', {
       const STATUS_EDITING = 'editing';
       const STATUS_SAVED = 'saved';
       const DRAW_MODE_POLY = 'polygon';
+      const OPEN_POLY_MODE = 'open';
+      const CLOSED_POLY_MODE = 'closed';
+      const DRAW_MODE_EYE_DROPPER = 'eyedropper';
       const DRAW_MODE_NONE = 'none';
       ctrl.drawMode = DRAW_MODE_NONE;
+      ctrl.polyMode = 'closed';
       ctrl.polyOptions = {
         x: 0,
         y: 0,
@@ -91,6 +95,8 @@ angular.module('oppia').component('svgFilenameEditor', {
       // Dynamically assign a unique id to each lc editor to avoid clashes
       // when there are multiple RTEs in the same page.
       ctrl.lcID = 'lc' + Math.floor(Math.random() * 100000).toString();
+      ctrl.canvasElement = null;
+      ctrl.fillPicker = null;
       ctrl.diagramWidth = 450;
       ctrl.currentDiagramWidth = 450;
       ctrl.diagramHeight = 350;
@@ -450,7 +456,9 @@ angular.module('oppia').component('svgFilenameEditor', {
         var left = findLeftPaddingForPolygon();
         var top = findTopPaddingForPolygon();
         var startPt = ctrl.polyOptions.bboxPoints[0];
-        ctrl.polyOptions.bboxPoints.push(new PolyPoint(startPt.x, startPt.y));
+        if (ctrl.polyMode === CLOSED_POLY_MODE) {
+          ctrl.polyOptions.bboxPoints.push(new PolyPoint(startPt.x, startPt.y));
+        }
         var shape = new fabric.Polyline(ctrl.polyOptions.bboxPoints, {
           fill: ctrl.fabricjsOptions.fill,
           stroke: ctrl.fabricjsOptions.stroke,
@@ -482,7 +490,7 @@ angular.module('oppia').component('svgFilenameEditor', {
         ctrl.polyOptions.y = options.e.pageY - offset.top;
       }
 
-      ctrl.createPolygon = function() {
+      var createPolygon = function() {
         if (ctrl.drawMode === DRAW_MODE_POLY) {
           ctrl.drawMode = DRAW_MODE_NONE;
           createPolyShape();
@@ -495,8 +503,28 @@ angular.module('oppia').component('svgFilenameEditor', {
         }
       };
 
+      ctrl.createOpenPolygon = function() {
+        ctrl.polyMode = OPEN_POLY_MODE;  
+        createPolygon();
+      };
+
+      ctrl.createClosedPolygon = function() {
+        ctrl.polyMode = CLOSED_POLY_MODE;  
+        createPolygon();
+      };
+
       ctrl.copyColor = function() {
-        // ctrl.fabricjsOptions.stroke = 
+        ctrl.drawMode = DRAW_MODE_EYE_DROPPER;
+        ctrl.canvas.defaultCursor = "pointer";
+        ctrl.canvas.hoverCursor = 'pointer';
+        ctrl.canvas.discardActiveObject();
+        ctrl.canvas.renderAll(); 
+      }
+
+      ctrl.onUndo = function() {
+      }
+
+      ctrl.onRedo = function() {
       }
 
       ctrl.removeShape = function() {
@@ -506,9 +534,13 @@ angular.module('oppia').component('svgFilenameEditor', {
         }
       }
 
+      ctrl.onClear = function() {
+        ctrl.canvas.clear();
+      }
+
       var onStrokeChange = function() {
         var shape = ctrl.canvas.getActiveObject();
-        var strokeShapes = ['rect', 'circle', 'path', 'line']
+        var strokeShapes = ['rect', 'circle', 'path', 'line', 'polyline']
         if (shape && strokeShapes.indexOf(shape.get('type')) !== -1) {
           shape.set({
             stroke: ctrl.fabricjsOptions.stroke
@@ -519,7 +551,7 @@ angular.module('oppia').component('svgFilenameEditor', {
 
       var onFillChange = function() {
         var shape = ctrl.canvas.getActiveObject();
-        var fillShapes = ['rect', 'circle', 'path', 'textbox']
+        var fillShapes = ['rect', 'circle', 'path', 'textbox', 'polyline']
         if (shape && fillShapes.indexOf(shape.get('type')) !== -1) {
           shape.set({
             fill: ctrl.fabricjsOptions.fill
@@ -566,7 +598,7 @@ angular.module('oppia').component('svgFilenameEditor', {
       ctrl.onSizeChange = function() {
         var shape = ctrl.canvas.getActiveObject();
         var size = ctrl.fabricjsOptions.size;
-        var strokeWidthShapes = ['rect', 'circle', 'path', 'line']
+        var strokeWidthShapes = ['rect', 'circle', 'path', 'line', 'polyline'];
         if (shape &&  strokeWidthShapes.indexOf(shape.get('type')) !== -1) {
           shape.set({
             strokeWidth: parseInt(size.substring(0, size.length - 2))
@@ -594,6 +626,9 @@ angular.module('oppia').component('svgFilenameEditor', {
           bg: onBgChange
         }
         var picker = new Picker(parent);
+        if (value === 'fill') {
+          ctrl.fillPicker = picker;
+        }
         picker.setOptions({
           color : ctrl.fabricjsOptions[value]
         })
@@ -605,13 +640,13 @@ angular.module('oppia').component('svgFilenameEditor', {
       }
 
       ctrl.$onInit = function() {
-        var canvas = document.getElementById('canvas');
+          ctrl.canvasElement = document.getElementById('canvas');
           // Make it visually fill the positioned parent
-          canvas.style.width ='100%';
-          canvas.style.height='100%';
+          ctrl.canvasElement.style.width ='100%';
+          ctrl.canvasElement.style.height='100%';
           // ...then set the internal size to match
-          canvas.width  = canvas.offsetWidth;
-          canvas.height = canvas.offsetHeight;
+          ctrl.canvasElement.width  = ctrl.canvasElement.offsetWidth;
+          ctrl.canvasElement.height = ctrl.canvasElement.offsetHeight;
 
           createColorPicker('stroke');
           createColorPicker('fill');
@@ -666,6 +701,20 @@ angular.module('oppia').component('svgFilenameEditor', {
               ctrl.polyOptions.lines.push(line);
               ctrl.canvas.add(ctrl.polyOptions.lines[ctrl.polyOptions.lineCounter]);
               ctrl.polyOptions.lineCounter++;
+            } else if (ctrl.drawMode === DRAW_MODE_EYE_DROPPER) {
+              ctrl.drawMode = DRAW_MODE_NONE;
+              var ctx = ctrl.canvasElement.getContext('2d');
+              var mouse = ctrl.canvas.getPointer(options.e);
+              var px = ctx.getImageData(parseInt(mouse.x), parseInt(mouse.y), 1, 1).data;
+              var colorString = 'rgba(' + px[0] + ',' + px[2] + ',' + px[2] + ',' +px[3] + ')';
+              ctrl.fabricjsOptions.fill = colorString;
+              ctrl.fillPicker.setOptions({
+                color : colorString
+              })
+              ctrl.canvas.discardActiveObject();
+              ctrl.canvas.defaultCursor = 'default';
+              ctrl.canvas.hoverCursor = 'default';
+              ctrl.canvas.renderAll();
             }
           })
 
