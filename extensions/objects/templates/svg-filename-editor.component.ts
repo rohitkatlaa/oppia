@@ -103,6 +103,10 @@ angular.module('oppia').component('svgFilenameEditor', {
       ctrl.currentDiagramHeight = 350;
       ctrl.data = {};
       ctrl.diagramStatus = STATUS_EDITING;
+      ctrl.objectUndoStack = [];
+      ctrl.objectRedoStack = [];
+      ctrl.isRedo = false;
+      ctrl.undoLimit = 5;
       ctrl.savedSVGDiagram = '';
       ctrl.invalidTagsAndAttributes = {
         tags: [],
@@ -115,8 +119,8 @@ angular.module('oppia').component('svgFilenameEditor', {
       ctrl.fabricjsOptions = {
         stroke: 'rgba(0, 0, 0, 1)',
         strokeWidth: 5,
-        fill: 'rgba(0, 0, 0, 1)',
-        bg: 'rgba(0, 0, 0, 1)',
+        fill: 'rgba(0, 0, 0, 0)',
+        bg: 'rgba(0, 0, 0, 0)',
         fontFamily: 'helvetica',
         size: '18px',
         bold: false,
@@ -380,6 +384,7 @@ angular.module('oppia').component('svgFilenameEditor', {
           fill : ctrl.fabricjsOptions.fill,
           stroke: ctrl.fabricjsOptions.stroke,
           strokeWidth: parseInt(size.substring(0, size.length - 2)),
+          strokeUniform: true
         });
         ctrl.canvas.add(rect);
       }
@@ -402,6 +407,7 @@ angular.module('oppia').component('svgFilenameEditor', {
           fill : ctrl.fabricjsOptions.fill,
           stroke: ctrl.fabricjsOptions.stroke,
           strokeWidth: parseInt(size.substring(0, size.length - 2)),
+          strokeUniform: true
         });
         ctrl.canvas.add(circle);
       };
@@ -463,6 +469,7 @@ angular.module('oppia').component('svgFilenameEditor', {
           fill: ctrl.fabricjsOptions.fill,
           stroke: ctrl.fabricjsOptions.stroke,
           strokeWidth: ctrl.fabricjsOptions.strokeWidth,
+          strokeUniform: true
         });
         return shape;
       }
@@ -521,15 +528,57 @@ angular.module('oppia').component('svgFilenameEditor', {
         ctrl.canvas.renderAll(); 
       }
 
+      var undoStackPush = function(object) {
+        if (ctrl.objectUndoStack.length === ctrl.undoLimit) {
+          ctrl.objectUndoStack.shift();
+        }
+        ctrl.objectUndoStack.push(object);
+      }
+
       ctrl.onUndo = function() {
+        ctrl.canvas.discardActiveObject();
+        if (ctrl.objectUndoStack.length > 0) {
+          var undoObj = ctrl.objectUndoStack.pop();
+          if (undoObj.action === 'add') {
+            ctrl.objectRedoStack.push({
+              action: 'add',
+              object: ctrl.canvas._objects.pop()
+            });
+          } else {
+            ctrl.isRedo = true;
+            ctrl.objectRedoStack.push({
+              action: 'remove',
+              object: undoObj.object
+            });
+            ctrl.canvas.add(undoObj.object);
+          }
+          ctrl.canvas.renderAll();
+        }
       }
 
       ctrl.onRedo = function() {
+        ctrl.canvas.discardActiveObject();
+        if (ctrl.objectRedoStack.length > 0) {
+          var redoObj = ctrl.objectRedoStack.pop();
+          undoStackPush(redoObj);
+          if (redoObj.action === 'add') {
+            ctrl.isRedo = true;
+            ctrl.canvas.add(redoObj.object);
+          } else {
+            ctrl.canvas._objects.pop();
+          }
+        }
+        ctrl.canvas.renderAll();
       }
 
       ctrl.removeShape = function() {
         var shape = ctrl.canvas.getActiveObject();
         if (shape) {
+          undoStackPush({
+            action : 'remove',
+            object: shape
+          });
+          ctrl.objectRedoStack = [];
           ctrl.canvas.remove(shape);
         }
       }
@@ -626,6 +675,7 @@ angular.module('oppia').component('svgFilenameEditor', {
           bg: onBgChange
         }
         var picker = new Picker(parent);
+        parent.style.background = ctrl.fabricjsOptions[value];
         if (value === 'fill') {
           ctrl.fillPicker = picker;
         }
@@ -665,70 +715,83 @@ angular.module('oppia').component('svgFilenameEditor', {
       //   console.log(fabric);
         ctrl.canvas = new fabric.Canvas('canvas');
 
-        fabric.loadSVGFromURL("http://fabricjs.com/assets/1.svg", function(objects,options) {
+        // Adding event listener for polygon tool
+        fabric.util.addListener(window, 'dblclick', function() {
+          if (ctrl.drawMode === DRAW_MODE_POLY) {
+            ctrl.drawMode = DRAW_MODE_NONE;
+            createPolyShape();
+          }
+        })
 
-          var loadedObjects = fabric.util.groupSVGElements(objects, options);
+        ctrl.canvas.on('mouse:down', function(options) {
+          if (ctrl.drawMode === DRAW_MODE_POLY) {
+            setPolyStartingPoint(options);
+            var x = ctrl.polyOptions.x;
+            var y = ctrl.polyOptions.y;
+            ctrl.polyOptions.bboxPoints.push(new PolyPoint(x, y));
+            var points = [x, y, x, y];
+            var line = new fabric.Line(points, {
+              strokeWidth: ctrl.fabricjsOptions.strokeWidth,
+              selectable: false,
+              stroke: ctrl.fabricjsOptions.stroke
+            });
+            ctrl.polyOptions.lines.push(line);
+            ctrl.canvas.add(ctrl.polyOptions.lines[ctrl.polyOptions.lineCounter]);
+            ctrl.polyOptions.lineCounter++;
+          } else if (ctrl.drawMode === DRAW_MODE_EYE_DROPPER) {
+            ctrl.drawMode = DRAW_MODE_NONE;
+            var ctx = ctrl.canvasElement.getContext('2d');
+            var mouse = ctrl.canvas.getPointer(options.e);
+            var px = ctx.getImageData(parseInt(mouse.x), parseInt(mouse.y), 1, 1).data;
+            var colorString = 'rgba(' + px[0] + ',' + px[2] + ',' + px[2] + ',' +px[3] + ')';
+            ctrl.fabricjsOptions.fill = colorString;
+            ctrl.fillPicker.setOptions({
+              color : colorString
+            })
+            ctrl.canvas.discardActiveObject();
+            ctrl.canvas.defaultCursor = 'default';
+            ctrl.canvas.hoverCursor = 'default';
+            ctrl.canvas.renderAll();
+          }
+        })
 
-          loadedObjects.set({
-                  width: 200,
-                  height: 200
-          });
+        ctrl.canvas.on('mouse:move', function(options) {
+          if (ctrl.polyOptions.lines.length !== 0 && ctrl.drawMode === DRAW_MODE_POLY) {
+            setPolyStartingPoint(options);
+            ctrl.polyOptions.lines[ctrl.polyOptions.lineCounter - 1].set({
+              x2: ctrl.polyOptions.x,
+              y2: ctrl.polyOptions.y,
+            });
+            ctrl.canvas.renderAll();
+          }
+        })
+
+        ctrl.canvas.on('object:added', function() {
+          // if(ctrl.objectUndoStack.length === 5) {
+
+          // }
+          if (!ctrl.isRedo) {
+            undoStackPush({
+              action : 'add',
+              object: ctrl.canvas._objects[ctrl.canvas._objects.length - 1]
+            });
+            ctrl.objectRedoStack = [];
+          }
+          ctrl.isRedo = false;
+        })
+
+        // fabric.loadSVGFromURL("http://fabricjs.com/assets/1.svg", function(objects,options) {
+
+        //   var loadedObjects = fabric.util.groupSVGElements(objects, options);
+
+        //   loadedObjects.set({
+        //           width: 200,
+        //           height: 200
+        //   });
           
-          ctrl.canvas.add(loadedObjects);
-          ctrl.canvas.renderAll();
-
-
-          // Adding event listener for polygon tool
-          fabric.util.addListener(window, 'dblclick', function() {
-            if (ctrl.drawMode === DRAW_MODE_POLY) {
-              ctrl.drawMode = DRAW_MODE_NONE;
-              createPolyShape();
-            }
-          })
-
-          ctrl.canvas.on('mouse:down', function(options) {
-            if (ctrl.drawMode === DRAW_MODE_POLY) {
-              setPolyStartingPoint(options);
-              var x = ctrl.polyOptions.x;
-              var y = ctrl.polyOptions.y;
-              ctrl.polyOptions.bboxPoints.push(new PolyPoint(x, y));
-              var points = [x, y, x, y];
-              var line = new fabric.Line(points, {
-                strokeWidth: ctrl.fabricjsOptions.strokeWidth,
-                selectable: false,
-                stroke: ctrl.fabricjsOptions.stroke
-              });
-              ctrl.polyOptions.lines.push(line);
-              ctrl.canvas.add(ctrl.polyOptions.lines[ctrl.polyOptions.lineCounter]);
-              ctrl.polyOptions.lineCounter++;
-            } else if (ctrl.drawMode === DRAW_MODE_EYE_DROPPER) {
-              ctrl.drawMode = DRAW_MODE_NONE;
-              var ctx = ctrl.canvasElement.getContext('2d');
-              var mouse = ctrl.canvas.getPointer(options.e);
-              var px = ctx.getImageData(parseInt(mouse.x), parseInt(mouse.y), 1, 1).data;
-              var colorString = 'rgba(' + px[0] + ',' + px[2] + ',' + px[2] + ',' +px[3] + ')';
-              ctrl.fabricjsOptions.fill = colorString;
-              ctrl.fillPicker.setOptions({
-                color : colorString
-              })
-              ctrl.canvas.discardActiveObject();
-              ctrl.canvas.defaultCursor = 'default';
-              ctrl.canvas.hoverCursor = 'default';
-              ctrl.canvas.renderAll();
-            }
-          })
-
-          ctrl.canvas.on('mouse:move', function(options) {
-            if (ctrl.polyOptions.lines.length !== 0 && ctrl.drawMode === DRAW_MODE_POLY) {
-              setPolyStartingPoint(options);
-              ctrl.polyOptions.lines[ctrl.polyOptions.lineCounter - 1].set({
-                x2: ctrl.polyOptions.x,
-                y2: ctrl.polyOptions.y,
-              });
-              ctrl.canvas.renderAll();
-            }
-          })
-      });
+        //   ctrl.canvas.add(loadedObjects);
+        //   ctrl.canvas.renderAll();  
+        // });
 
       //   LC.defineSVGRenderer(
       //     'Rectangle', LiterallyCanvasHelperService.rectangleSVGRenderer);
