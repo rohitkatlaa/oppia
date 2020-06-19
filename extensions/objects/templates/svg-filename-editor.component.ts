@@ -250,10 +250,16 @@ angular.module('oppia').component('svgFilenameEditor', {
       };
 
       var getSVGString = function() {
-        console.log(ctrl.canvas.toSVG());
-        var linesvg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="494" height="367" viewBox="0 0 494 367"><desc>Created with Fabric.js 3.6.3</desc><defs></defs><g transform="matrix(1 0 0 1 410 189)"  ><circle style="stroke: rgb(123,131,235); stroke-width: 18; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,136,136); fill-rule: nonzero; opacity: 1;"  cx="0" cy="0" r="30" /></g><g transform="matrix(0.1 -0.99 0.99 0.1 380 75)"  ><rect style="stroke: rgb(123,131,235); stroke-width: 18; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,136,136); fill-rule: nonzero; opacity: 1;"  x="-30" y="-35" rx="0" ry="0" width="60" height="70" /></g><g transform="matrix(1.37 -0.48 0.48 1.37 362.29 299.93)"  ><line style="stroke: rgb(123,131,235); stroke-width: 18; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;"  x1="-20" y1="-20" x2="20" y2="20" /></g><g transform="matrix(1 0 0 1 45.49 35.63)"  ><path style="stroke: rgb(123,131,235); stroke-width: 18; stroke-dasharray: none; stroke-linecap: round; stroke-dashoffset: 0; stroke-linejoin: round; stroke-miterlimit: 10; fill: none; fill-rule: nonzero; opacity: 1;"  transform=" translate(-45.49, -35.63)" d="M 34.482 24.625 Q 34.5 24.625 35 24.625 Q 35.5 24.625 36 24.625 Q 36.5 24.625 37.5 25.125 Q 38.5 25.625 39 25.625 Q 39.5 25.625 40.5 26.125 Q 41.5 26.625 42.5 27.625 Q 43.5 28.625 44 29.125 Q 44.5 29.625 45.5 30.625 Q 46.5 31.625 48 32.625 Q 49.5 33.625 50 34.125 Q 50.5 34.625 51.5 36.125 Q 52.5 37.625 53 38.125 Q 53.5 38.625 54 39.625 Q 54.5 40.625 55 41.625 Q 55.5 42.625 56 43.625 Q 56.5 44.625 56.5 45.125 Q 56.5 45.625 56.5 46.125 L 56.5 46.643" stroke-linecap="round" /></g><g transform="matrix(2.89 0 0 2.89 137.54 91.02)" style=""  ><text font-family="helvetica" font-size="18" font-style="normal" font-weight="normal" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,136,136); fill-rule: nonzero; opacity: 1; white-space: pre;" ><tspan x="-21.51" y="5.65" >hello</tspan></text></g><g transform="matrix(1 0 0 1 69.5 194.13)"  ><polyline style="stroke: rgb(123,131,235); stroke-width: 5; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,136,136); fill-rule: nonzero; opacity: 1;"  points="-15,-27.5 -47,22.5 40,37.5 47,-37.5 47,-37.5 -15,-27.5 " /></g><g transform="matrix(1 0 0 1 248.5 156.13)"  ><polyline style="stroke: rgb(123,131,235); stroke-width: 5; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(255,136,136); fill-rule: nonzero; opacity: 1;"  points="-65,8.5 -56,59.5 65,25.5 32,-59.5 32,-59.5 32,-59.5 " /></g></svg>';
-        return linesvg;
-        // return ctrl.canvas.toSVG();
+        var svgString = ctrl.canvas.toSVG();
+        var domParser = new DOMParser();
+        var doc = domParser.parseFromString(svgString, 'text/xml');
+        var svg = doc.querySelector('svg')
+        svg.removeAttribute('xml:space');
+        var textTags = doc.querySelectorAll('text');
+        textTags.forEach(function(obj) {
+          obj.removeAttribute('xml:space');
+        })
+        return svg.outerHTML;
       }
 
       var isSvgTagValid = function(svgString) {
@@ -421,29 +427,7 @@ angular.module('oppia').component('svgFilenameEditor', {
         this.y = y;
       }
 
-      var findLeftPaddingForPolygon = function() {
-        var result = 999999;
-        for (var i = 0; i < ctrl.polyOptions.lineCounter; i++) {
-            if (ctrl.polyOptions.bboxPoints[i].y < result) {
-                result = ctrl.polyOptions.bboxPoints[i].y;
-            }
-        }
-        return Math.abs(result);
-      }
-
-      var findTopPaddingForPolygon = function() {
-        var result = 999999;
-        for (var i = 0; i < ctrl.polyOptions.lineCounter; i++) {
-            if (ctrl.polyOptions.bboxPoints[i].x < result) {
-                result = ctrl.polyOptions.bboxPoints[i].x;
-            }
-        }
-        return Math.abs(result);
-      }
-
       var makePolygon = function() {
-        var left = findLeftPaddingForPolygon();
-        var top = findTopPaddingForPolygon();
         var startPt = ctrl.polyOptions.bboxPoints[0];
         if (ctrl.polyMode === CLOSED_POLY_MODE) {
           ctrl.polyOptions.bboxPoints.push(new PolyPoint(startPt.x, startPt.y));
@@ -703,7 +687,7 @@ angular.module('oppia').component('svgFilenameEditor', {
         createColorPicker('bg');
         
         // WindowDimensionsService.registerOnResizeHook(function() {
-        //   var canvas = document.getElementById('canvas');
+        //   var canvas = document.getElementById(ctrl.canvasID);
         //   // Make it visually fill the positioned parent
         //   canvas.style.width ='100%';
         //   canvas.style.height='100%';

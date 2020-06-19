@@ -607,6 +607,7 @@ export = {
       "transform",
       "typeof",
       "unicode-bidi",
+      "vector-effect",
       "visibility",
       "word-spacing",
       "writing-mode"
@@ -884,6 +885,7 @@ export = {
       "transform",
       "typeof",
       "unicode-bidi",
+      "vector-effect",
       "visibility",
       "word-spacing",
       "writing-mode"
@@ -2918,6 +2920,7 @@ export = {
       "transform",
       "typeof",
       "unicode-bidi",
+      "vector-effect",
       "visibility",
       "word-spacing",
       "writing-mode",
@@ -3304,6 +3307,7 @@ export = {
       "transform",
       "typeof",
       "unicode-bidi",
+      "vector-effect",
       "visibility",
       "word-spacing",
       "writing-mode"
@@ -3487,6 +3491,7 @@ export = {
       "transform",
       "typeof",
       "unicode-bidi",
+      "vector-effect",
       "visibility",
       "word-spacing",
       "writing-mode"
@@ -3582,6 +3587,7 @@ export = {
       "transform",
       "typeof",
       "unicode-bidi",
+      "vector-effect",
       "visibility",
       "word-spacing",
       "writing-mode"
@@ -3764,6 +3770,7 @@ export = {
       "transform",
       "typeof",
       "unicode-bidi",
+      "vector-effect",
       "visibility",
       "width",
       "word-spacing",
@@ -4242,6 +4249,7 @@ export = {
       "transform",
       "typeof",
       "unicode-bidi",
+      "vector-effect",
       "visibility",
       "word-spacing",
       "writing-mode",
@@ -4532,6 +4540,7 @@ export = {
       "textlength",
       "typeof",
       "unicode-bidi",
+      "vector-effect",
       "visibility",
       "word-spacing",
       "writing-mode",

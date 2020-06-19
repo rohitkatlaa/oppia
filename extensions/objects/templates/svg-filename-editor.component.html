@@ -106,7 +106,7 @@
   </div>
   <div ng-if="$ctrl.isDiagramSaved()">
     <div class="diagram-editor-saved-image-container">
-      <i class="material-icons diagram-editor-edit" ng-click="$ctrl.continueDiagramEditing()"
+      <i class="material-icons diagram-editor-edit edit-icon" ng-click="$ctrl.continueDiagramEditing()"
         title="Continue editing the diagram">
         &#xE254;
       </i>
@@ -120,6 +120,18 @@
   </div>
 </div>
 <style>
+  .diagram-editor-saved-image-container {
+    position: relative;
+  }
+
+  .diagram-editor-saved-image-container .edit-icon {
+    color: black;
+    position: absolute;
+    right: 6px;
+    text-shadow: 0px 0px 1px #fff;
+    top: 6px;
+  }
+
   .svg-editor {
     background-color: #ffffff;
     min-height: 400px;
