@@ -51,8 +51,6 @@ angular.module('oppia').component('svgFilenameEditor', {
       // content.
       var MAX_DIAGRAM_WIDTH = 491;
       var MAX_DIAGRAM_HEIGHT = 551;
-      var DEFAULT_STROKE_WIDTH = 2;
-      var ALLOWED_STROKE_WIDTHS = [1, 2, 3, 5, 30];
       const STATUS_EDITING = 'editing';
       const STATUS_SAVED = 'saved';
       const DRAW_MODE_POLY = 'polygon';
@@ -62,7 +60,7 @@ angular.module('oppia').component('svgFilenameEditor', {
       const OPEN_POLY_MODE = 'open';
       const CLOSED_POLY_MODE = 'closed';
       ctrl.drawMode = DRAW_MODE_NONE;
-      ctrl.polyMode = 'closed';
+      ctrl.polyMode = CLOSED_POLY_MODE;
       ctrl.polyOptions = {
         x: 0,
         y: 0,
@@ -71,7 +69,7 @@ angular.module('oppia').component('svgFilenameEditor', {
         lineCounter: 0,
         shape: null
       }
-      ctrl.sizes = ['1px', '2px', '3px', '5px', '9px', '10px', '12px', '14px', '18px', '24px', '30px', '36px', '48px', '64px'];
+      ctrl.sizes = ['1px', '2px', '3px', '5px', '9px', '10px', '12px', '14px', '18px', '24px', '30px', '36px'];
       ctrl.fontFamily = [
         'arial',
         'helvetica',
@@ -111,11 +109,10 @@ angular.module('oppia').component('svgFilenameEditor', {
       ctrl.svgContainerStyle = {};
       ctrl.fabricjsOptions = {
         stroke: 'rgba(0, 0, 0, 1)',
-        strokeWidth: 5,
         fill: 'rgba(0, 0, 0, 1)',
         bg: 'rgba(0, 0, 0, 0)',
         fontFamily: 'helvetica',
-        size: '18px',
+        size: '9px',
         bold: false,
         italic: false
       };
@@ -262,7 +259,19 @@ angular.module('oppia').component('svgFilenameEditor', {
         return svg.outerHTML;
       }
 
-      var isSvgTagValid = function(svgString) {
+      ctrl.isSvgTagValid = function(svgString) {
+        var dataURI = 'data:image/svg+xml;base64,' + btoa(svgString);
+        var invalidTagsAndAttr = (
+          ImageUploadHelperService.getInvalidSvgTagsAndAttrs(dataURI));
+        if (invalidTagsAndAttr.tags.length !== 0) {
+          var errorText = (
+            'Invalid tags in svg:' + invalidTagsAndAttr.tags.join());
+          throw new Error(errorText);
+        } else if (invalidTagsAndAttr.attrs.length !== 0) {
+          var errorText = (
+            'Invalid attributes in svg:' + invalidTagsAndAttr.attrs.join());
+          throw new Error(errorText);
+        }
         return true;
       }
 
@@ -282,7 +291,7 @@ angular.module('oppia').component('svgFilenameEditor', {
         };
         let resampledFile;
 
-        if (isSvgTagValid(svgString)) {
+        if (ctrl.isSvgTagValid(svgString)) {
           ctrl.savedSVGDiagram = svgString;
           resampledFile = (
             ImageUploadHelperService.convertImageDataToImageFile(
@@ -332,9 +341,42 @@ angular.module('oppia').component('svgFilenameEditor', {
         ctrl.data = {};
         angular.element(document).ready(function() {
           initializeFabricJs();
-          fabric.loadSVGFromString(ctrl.savedSVGDiagram, function(objects, options) {
-            objects.forEach(function(obj) {
-              ctrl.canvas.add(obj);
+          fabric.loadSVGFromString(ctrl.savedSVGDiagram, function(objects, options, elements) {
+            objects.forEach(function(obj, index) {
+              if (obj.get('type') === 'rect') {
+                if (
+                  elements[index].width.baseVal.valueAsString === '100%' &&
+                  elements[index].height.baseVal.valueAsString === '100%')
+                {
+                  ctrl.canvas.setBackgroundColor(obj.get('fill'));
+                }
+                else {
+                  ctrl.canvas.add(obj);
+                }
+              } else if (obj['type'] == 'text') {
+                var element = elements[index];
+                var childrens = [].slice.call(element.childNodes);
+                var value = '';
+                childrens.forEach(function (el, index) {
+                    if (el.nodeName == 'tspan') {
+                        value += el.childNodes[0].nodeValue;
+                    }
+                    if (index < childrens.length - 1) {
+                        value += '\n';
+                    }
+                });
+                value =(
+                  obj['text-transform'] == 'uppercase' ? value.toUpperCase() : value);
+
+                var text = new fabric.Textbox(obj.text, obj.toObject());
+                text.set({
+                    text: value,
+                    type: 'textbox'
+                });
+                ctrl.canvas.add(text);
+            } else {
+                ctrl.canvas.add(obj);
+              }
             });
           });
         });
@@ -385,6 +427,7 @@ angular.module('oppia').component('svgFilenameEditor', {
       };
 
       ctrl.createText = function() {
+        ctrl.fabricjsOptions.size = '18px';
         var size = ctrl.fabricjsOptions.size;
         var text = new fabric.Textbox('Enter Text', {
           top : 10,
@@ -411,7 +454,7 @@ angular.module('oppia').component('svgFilenameEditor', {
           ctrl.areAllToolsEnabled() || ctrl.isDrawModePencil());
       }
 
-      ctrl.createPencilDrawing = function() {
+      ctrl.togglePencilDrawing = function() {
         var size = ctrl.fabricjsOptions.size;
         ctrl.canvas.isDrawingMode = !ctrl.canvas.isDrawingMode;
         ctrl.canvas.freeDrawingBrush.color = ctrl.fabricjsOptions.stroke;
@@ -432,11 +475,13 @@ angular.module('oppia').component('svgFilenameEditor', {
         if (ctrl.polyMode === CLOSED_POLY_MODE) {
           ctrl.polyOptions.bboxPoints.push(new PolyPoint(startPt.x, startPt.y));
         }
+        var size = ctrl.fabricjsOptions.size;
         var shape = new fabric.Polyline(ctrl.polyOptions.bboxPoints, {
           fill: ctrl.fabricjsOptions.fill,
           stroke: ctrl.fabricjsOptions.stroke,
-          strokeWidth: ctrl.fabricjsOptions.strokeWidth,
-          strokeUniform: true
+          strokeWidth: parseInt(size.substring(0, size.length - 2)),
+          strokeUniform: true,
+          strokeLineCap: 'round'
         });
         return shape;
       }
@@ -445,8 +490,10 @@ angular.module('oppia').component('svgFilenameEditor', {
         ctrl.polyOptions.lines.forEach(function(value){
           ctrl.canvas.remove(value);
         });
-        ctrl.polyOptions.shape = makePolygon();
-        ctrl.canvas.add(ctrl.polyOptions.shape);
+        if (ctrl.polyOptions.bboxPoints.length > 0) {
+          ctrl.polyOptions.shape = makePolygon();
+          ctrl.canvas.add(ctrl.polyOptions.shape);
+        }
         ctrl.canvas.hoverCursor = "move";
         ctrl.canvas.forEachObject(function(object) { 
                 object.selectable = true; 
@@ -577,7 +624,7 @@ angular.module('oppia').component('svgFilenameEditor', {
         ctrl.canvas.clear();
       }
 
-      var onStrokeChange = function() {
+      ctrl.onStrokeChange = function() {
         var shape = ctrl.canvas.getActiveObject();
         var strokeShapes = ['rect', 'circle', 'path', 'line', 'polyline']
         if (shape && strokeShapes.indexOf(shape.get('type')) !== -1) {
@@ -588,7 +635,7 @@ angular.module('oppia').component('svgFilenameEditor', {
         }
       }
 
-      var onFillChange = function() {
+      ctrl.onFillChange = function() {
         var shape = ctrl.canvas.getActiveObject();
         var fillShapes = ['rect', 'circle', 'path', 'textbox', 'polyline']
         if (shape && fillShapes.indexOf(shape.get('type')) !== -1) {
@@ -599,7 +646,7 @@ angular.module('oppia').component('svgFilenameEditor', {
         }
       }
 
-      var onBgChange = function() {
+      ctrl.onBgChange = function() {
         ctrl.canvas.setBackgroundColor(ctrl.fabricjsOptions.bg);
         ctrl.canvas.renderAll()
       }
@@ -654,53 +701,28 @@ angular.module('oppia').component('svgFilenameEditor', {
       var createColorPicker = function(value) {
         var parent = document.getElementById(value + '-color');
         var onChangeFunc = {
-          stroke: onStrokeChange,
-          fill: onFillChange,
-          bg: onBgChange
+          stroke: ctrl.onStrokeChange,
+          fill: ctrl.onFillChange,
+          bg: ctrl.onBgChange
         }
         var picker = new Picker(parent);
         parent.style.background = ctrl.fabricjsOptions[value];
         if (value === 'fill') {
           ctrl.fillPicker = picker;
         }
+        picker.onChange = function(color) {
+          parent.style.background = color.rgbaString;
+          ctrl.fabricjsOptions[value] = color.rgbaString;
+          onChangeFunc[value]();
+        };
         picker.setOptions({
           color : ctrl.fabricjsOptions[value]
         })
-        picker.onChange = function(color) {
-            parent.style.background = color.rgbaString;
-            ctrl.fabricjsOptions[value] = color.rgbaString;
-            onChangeFunc[value]();
-        };
       }
 
-      var initializeFabricJs = function() {
-        ctrl.canvasElement = document.getElementById(ctrl.canvasID);
-        // Make it visually fill the positioned parent
-        ctrl.canvasElement.style.width ='100%';
-        ctrl.canvasElement.style.height='100%';
-        // ...then set the internal size to match
-        ctrl.canvasElement.width  = ctrl.canvasElement.offsetWidth;
-        ctrl.canvasElement.height = ctrl.canvasElement.offsetHeight;
-
-        createColorPicker('stroke');
-        createColorPicker('fill');
-        createColorPicker('bg');
-        
-        // WindowDimensionsService.registerOnResizeHook(function() {
-        //   var canvas = document.getElementById(ctrl.canvasID);
-        //   // Make it visually fill the positioned parent
-        //   canvas.style.width ='100%';
-        //   canvas.style.height='100%';
-        //   // ...then set the internal size to match
-        //   canvas.width  = canvas.offsetWidth;
-        //   canvas.height = canvas.offsetHeight;
-        // })
-
-        ctrl.canvas = new fabric.Canvas(ctrl.canvasID);
-        ctrl.canvas.selection = false;
-
+      ctrl.initializeMouseEvents = function() {
         // Adding event listener for polygon tool
-        fabric.util.addListener(window, 'dblclick', function() {
+        ctrl.canvas.on('mouse:dblclick', function() {
           if (ctrl.drawMode === DRAW_MODE_POLY) {
             ctrl.drawMode = DRAW_MODE_NONE;
             createPolyShape();
@@ -714,10 +736,12 @@ angular.module('oppia').component('svgFilenameEditor', {
             var y = ctrl.polyOptions.y;
             ctrl.polyOptions.bboxPoints.push(new PolyPoint(x, y));
             var points = [x, y, x, y];
+            var size = ctrl.fabricjsOptions.size;
             var line = new fabric.Line(points, {
-              strokeWidth: ctrl.fabricjsOptions.strokeWidth,
+              strokeWidth: parseInt(size.substring(0, size.length - 2)),
               selectable: false,
-              stroke: ctrl.fabricjsOptions.stroke
+              stroke: ctrl.fabricjsOptions.stroke,
+              strokeLineCap: 'round'
             });
             ctrl.polyOptions.lines.push(line);
             ctrl.canvas.add(ctrl.polyOptions.lines[ctrl.polyOptions.lineCounter]);
@@ -728,7 +752,7 @@ angular.module('oppia').component('svgFilenameEditor', {
             var ctx = ctrl.canvasElement.getContext('2d');
             var mouse = ctrl.canvas.getPointer(options.e);
             var px = ctx.getImageData(parseInt(mouse.x), parseInt(mouse.y), 1, 1).data;
-            var colorString = 'rgba(' + px[0] + ',' + px[2] + ',' + px[2] + ',' +px[3] + ')';
+            var colorString = 'rgba(' + px[0] + ',' + px[1] + ',' + px[2] + ',' +px[3] + ')';
             ctrl.fabricjsOptions.fill = colorString;
             ctrl.fillPicker.setOptions({
               color : colorString
@@ -773,6 +797,23 @@ angular.module('oppia').component('svgFilenameEditor', {
           ctrl.enableRemoveButton = false;
           ctrl.displayFontStyles = false;
         })
+      }
+
+      var initializeFabricJs = function() {
+        ctrl.canvasElement = document.getElementById(ctrl.canvasID);
+        // Make it visually fill the positioned parent
+        ctrl.canvasElement.style.width ='100%';
+        ctrl.canvasElement.style.height='100%';
+        // ...then set the internal size to match
+        ctrl.canvasElement.width  = ctrl.canvasElement.offsetWidth;
+        ctrl.canvasElement.height = ctrl.canvasElement.offsetHeight;
+
+        ctrl.canvas = new fabric.Canvas(ctrl.canvasID);
+        ctrl.canvas.selection = false;
+        ctrl.initializeMouseEvents();
+        createColorPicker('stroke');
+        createColorPicker('fill');
+        createColorPicker('bg');
       }
 
       ctrl.$onInit = function() {

@@ -15,7 +15,7 @@
     <div class="vertical-toolbar">
       <div>
         <button class="icon-tool toolbar-button thin-button" ng-class="{'disabled' : !$ctrl.isPencilEnabeled()}"
-          style="background-image:url(/assets/svg_diagram_editor/pencil.svg);" ng-click="$ctrl.createPencilDrawing()"
+          style="background-image:url(/assets/svg_diagram_editor/pencil.svg);" ng-click="$ctrl.togglePencilDrawing()"
           tooltip-placement="left" uib-tooltip="Pencil" ng-disabled="!$ctrl.isPencilEnabeled()">
         </button>
         <button class="icon-tool toolbar-button thin-button" ng-class="{'disabled' : !$ctrl.areAllToolsEnabled()}"
